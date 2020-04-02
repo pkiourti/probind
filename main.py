@@ -1,6 +1,6 @@
 import numpy as np
 import os
-from data import DNASeqGenerator
+from generator import DNASeqGenerator
 
 
 def data_files():

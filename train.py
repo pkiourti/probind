@@ -6,7 +6,7 @@ import os
 import numpy as np
 import argparse
 
-from models import CNN
+from cnn import CNN
 
 TRAIN_SPLIT = 0.8
 
