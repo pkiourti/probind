@@ -27,7 +27,7 @@ class CNN(nn.Module):
         reverse_avg_v = F.avg_pool1d(X_reverse, 277, 1)
         X = torch.cat((forward_max_v, forward_avg_v, reverse_max_v, reverse_avg_v), 1)
         X = X.view(-1, 64)
-        X = self.batchNorm1d(X)
+        X = self.batchNorm(X)
         X = self.linear1(X)
         X = self.dropout(X)
         X = self.linear2(X)
