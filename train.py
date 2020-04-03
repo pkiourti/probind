@@ -39,7 +39,8 @@ def get_parser():
 def load_model():
     cnn: CNN = CNN()
 
-    dev = "cuda:0" if torch.cuda.is_available() else "cpu"
+    #dev = "cuda:0" if torch.cuda.is_available() else "cpu"
+    dev = "cpu"
     device = torch.device(dev)
     cnn.to(device)
     cnn.train()
@@ -54,7 +55,6 @@ def load_data(path, name_x_forward, name_x_reverse, name_y):
     dna_binding_values = np.load(os.path.join(path, name_y))
 
     x_tensors_for = torch.tensor(dna_seqs_for).unsqueeze(1)
-    print(x_tensors_for.shape)
     x_tensors_rev = torch.tensor(dna_seqs_rev).unsqueeze(1)
     y_tensors = torch.tensor(dna_binding_values).unsqueeze(1)
 
@@ -65,7 +65,7 @@ def load_data(path, name_x_forward, name_x_reverse, name_y):
     train_dataset, test_dataset = random_split(dataset, [train_length, test_length])
 
     train_loader = DataLoader(train_dataset, batch_size=100, shuffle=True)
-    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=100, shuffle=False)
 
     return train_loader, test_loader
 
@@ -91,14 +91,10 @@ if __name__ == '__main__':
     # TRACKERS
     train_losses = []
     test_losses = []
-    train_correct = []
-    test_correct = []
 
     start_time = time.time()
 
     for epoch in range(epochs):
-        trn_correct = 0
-        tst_correct = 0
         for b, (X_train_forward, X_train_reverse, y_train) in enumerate(train_loader):
             b += 1
             pred = model(X_train_forward.float(), X_train_reverse.float())
@@ -109,9 +105,20 @@ if __name__ == '__main__':
 
             if b % 100 == 0:
                 print(f'Epoch {epoch} batch {b} loss: {loss.item()}')
+
         train_losses.append(loss)
+
+        # TEST
+        with torch.no_grad():
+            for b, (X_test_forward, X_test_reverse, y_test) in enumerate(test_loader):
+                b+=1
+                pred = model(X_test_forward.float(), X_test_reverse.float())
+
+        loss = model.loss(pred, y_test.float())
+        test_losses.extend([loss])
 
     total_time = time.time() - start_time
     print(f'Duration: {total_time / 60} mins')
     torch.save(model.state_dict(), 'model')
-    np.save('train_losses.npy', train_losses)
+    np.save('train_losses_' + str(epochs) + '.npy', train_losses)
+    np.save('test_losses_' + str(epochs) + '.npy', train_losses)
