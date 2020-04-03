@@ -6,7 +6,7 @@ from torch.nn import MSELoss
 
 class CNN(nn.Module):
 
-    def __init__(self, input_channels=1, filters=16, kernel=(4,24), stride=1):
+    def __init__(self, input_channels=1, filters=16, kernel=(4, 24), stride=1):
         super().__init__()
         self.conv1 = nn.Conv2d(input_channels, filters, kernel, stride)
         self.batchNorm = nn.BatchNorm1d(num_features=64)
@@ -14,7 +14,6 @@ class CNN(nn.Module):
         self.dropout = nn.Dropout(0.5)
         self.linear2 = nn.Linear(128, 128)
         self.output = nn.Linear(128, 1)
-
 
     def forward(self, X_forward, X_reverse):
         X_forward = self.conv1(X_forward)
@@ -32,7 +31,6 @@ class CNN(nn.Module):
         X = self.dropout(X)
         X = self.linear2(X)
         return self.output(X)
-
 
     def loss(self, pred, actual):
         criterion = MSELoss()
