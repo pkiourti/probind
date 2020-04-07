@@ -23,24 +23,22 @@ def get_parser():
     parser.add_argument('--path', type=str, default='data',
                         help='path directory that includes data',
                         dest='path')
-    parser.add_argument('--name_x_forward', type=str, default='data/x_forward_1',
+    parser.add_argument('--name_x_forward', type=str, default='x_forward_1.npy',
                         help='name of npy file that contains the forward sequences',
                         dest='name_x_forward')
-    parser.add_argument('--name_x_reverse', type=str, default='data/x_reverse_1',
+    parser.add_argument('--name_x_reverse', type=str, default='x_reverse_1.npy',
                         help='name of npy file that contains the reverse sequences',
                         dest='name_x_reverse')
-    parser.add_argument('--name_y', type=str, default='data/x_reverse_1',
+    parser.add_argument('--name_y', type=str, default='y_1.npy',
                         help='name of npy file that contains the binding values',
                         dest='name_y')
 
     return parser
 
 
-def load_model():
+def load_model(dev):
     cnn: CNN = CNN()
 
-    #dev = "cuda:0" if torch.cuda.is_available() else "cpu"
-    dev = "cpu"
     device = torch.device(dev)
     cnn.to(device)
     cnn.train()
@@ -49,14 +47,14 @@ def load_model():
     return cnn, optim
 
 
-def load_data(path, name_x_forward, name_x_reverse, name_y):
+def load_data(path, name_x_forward, name_x_reverse, name_y, dev):
     dna_seqs_for = np.load(os.path.join(path, name_x_forward))
     dna_seqs_rev = np.load(os.path.join(path, name_x_reverse))
     dna_binding_values = np.load(os.path.join(path, name_y))
 
-    x_tensors_for = torch.tensor(dna_seqs_for).unsqueeze(1)
-    x_tensors_rev = torch.tensor(dna_seqs_rev).unsqueeze(1)
-    y_tensors = torch.tensor(dna_binding_values).unsqueeze(1)
+    x_tensors_for = torch.FloatTensor(dna_seqs_for).unsqueeze(1).to(dev)
+    x_tensors_rev = torch.FloatTensor(dna_seqs_rev).unsqueeze(1).to(dev)
+    y_tensors = torch.FloatTensor(dna_binding_values).unsqueeze(1).to(dev)
 
     dataset = TensorDataset(x_tensors_for, x_tensors_rev, y_tensors)
     train_length = int(TRAIN_SPLIT * x_tensors_for.shape[0])
@@ -74,7 +72,9 @@ if __name__ == '__main__':
 
     args = get_parser().parse_args()
 
-    model, optimizer = load_model()
+    dev = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+    model, optimizer = load_model(dev)
     model = model.float()
 
     epochs = args.epochs
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 
     torch.manual_seed(seed)
 
-    train_loader, test_loader = load_data(path, name_x_forward, name_x_reverse, name_y)
+    train_loader, test_loader = load_data(path, name_x_forward, name_x_reverse, name_y, dev)
 
     # TRACKERS
     train_losses = []
@@ -97,8 +97,8 @@ if __name__ == '__main__':
     for epoch in range(epochs):
         for b, (X_train_forward, X_train_reverse, y_train) in enumerate(train_loader):
             b += 1
-            pred = model(X_train_forward.float(), X_train_reverse.float())
-            loss = model.loss(pred, y_train.float())
+            pred = model(X_train_forward, X_train_reverse)
+            loss = model.loss(pred, y_train)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -112,9 +112,9 @@ if __name__ == '__main__':
         with torch.no_grad():
             for b, (X_test_forward, X_test_reverse, y_test) in enumerate(test_loader):
                 b+=1
-                pred = model(X_test_forward.float(), X_test_reverse.float())
+                pred = model(X_test_forward, X_test_reverse)
 
-        loss = model.loss(pred, y_test.float())
+        loss = model.loss(pred, y_test)
         test_losses.extend([loss])
 
     total_time = time.time() - start_time
