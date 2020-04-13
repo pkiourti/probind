@@ -2,34 +2,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSignal, QObject, Qt
 
 
-class LoadDataDialog(QtWidgets.QDialog):
-    def __init__(self, *args, **kwargs):
-        super(LoadDataDialog, self).__init__(*args, **kwargs)
-
-        self.setWindowTitle("Select file to load data from.")
-
-        # create widgets
-        self.text_label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
-                                                      \nGo to [url for github docs] for example file formats.");
-
-        # filepath input
-        self.filepath_input = QtWidgets.QLineEdit("default filepath")
-
-        # folder icon
-
-        # button
-        self.train_model_btn = QtWidgets.QPushButton("Train model with this data")
-        # self.train_model_btn.clicked.connect(self.train_model("input_data"))
-
-        # Create layout and add widgets
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.text_label)
-        layout.addWidget(self.filepath_input)
-        # add folder icon here
-        layout.addWidget(self.train_model_btn)
-        self.setLayout(layout)
-
-
 class TrainModelWidget(QtWidgets.QWidget):
     """
     Custom Qt Widget for synbio_project GUI.
@@ -50,7 +22,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         load_data_action.triggered.connect(self.load_data)
 
         train_model_btn_menu.addAction(random_data_action)
-        train_model_btn_menu.addAction("Load data...")
+        train_model_btn_menu.addAction(load_data_action)
 
         train_model_btn.setMenu(train_model_btn_menu) # associates menu with button
 
@@ -65,5 +37,28 @@ class TrainModelWidget(QtWidgets.QWidget):
         alert.exec_()
 
     def load_data(self):
-        self.dialog = LoadDataDialog()
-        self.dialog.exec_()
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Select file to load data from.")
+
+        # create widgets
+        text_label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
+                                                              \nGo to [url for github docs] for example file formats.");
+
+        # filepath input
+        filepath_input = QtWidgets.QLineEdit("default filepath")
+
+        # folder icon
+
+        # button
+        train_model_btn = QtWidgets.QPushButton("Train model with this data")
+        # self.train_model_btn.clicked.connect(self.train_model("input_data"))
+
+        # Create layout and add widgets
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(text_label)
+        layout.addWidget(filepath_input)
+        # add folder icon here
+        layout.addWidget(train_model_btn)
+        dialog.setLayout(layout)
+
+        dialog.exec_()
