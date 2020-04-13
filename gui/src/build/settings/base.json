@@ -1,0 +1,6 @@
+{
+    "app_name": "synbio_gui",
+    "author": "Thuy Pham",
+    "main_module": "src/main/python/synbio_gui/main.py",
+    "version": "0.0.0"
+}
