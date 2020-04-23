@@ -57,12 +57,15 @@ class RMW(QtWidgets.QWidget):
         button_layout.addWidget(cancel)
         button_layout.addWidget(ok)
 
+        buttonlayout = QtWidgets.QHBoxLayout()
+        buttonlayout.addWidget(label3)
+        buttonlayout.addWidget(label4)
+
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label1)
         layout.addWidget(combo)
         layout.addWidget(label2)
-        layout.addWidget(label3)
-        layout.addWidget(label4)
+        layout.addLayout(buttonlayout)
         layout.addWidget(label5)
         layout.addWidget(label6)
         layout.addWidget(textbox1)
