@@ -4,6 +4,7 @@ from torch.utils.data import TensorDataset, random_split, DataLoader
 import time
 import os
 import numpy as np
+import matplotlib.pyplot as plt
 import argparse
 
 from cnn import CNN
@@ -122,3 +123,7 @@ if __name__ == '__main__':
     torch.save(model.state_dict(), 'model')
     np.save('train_losses_' + str(epochs) + '.npy', train_losses)
     np.save('test_losses_' + str(epochs) + '.npy', train_losses)
+    plt.plot([i for i in range(epochs)], train_losses, label='train')
+    plt.plot([i for i in range(epochs)], test_losses, label='test')
+    plt.legend()
+    plt.savefig('results.pdf')
