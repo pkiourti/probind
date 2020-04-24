@@ -7,7 +7,6 @@ class RMW(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(RMW, self).__init__(*args, **kwargs)
-        self.setFixedSize(500, 150)
 
         rm_button = QtWidgets.QPushButton("Run Model")
 

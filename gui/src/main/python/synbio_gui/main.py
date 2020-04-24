@@ -2,6 +2,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5 import QtWidgets
 from train_model_module import TrainModelWidget
 from manage_models import ManageModelWidget
+from runmodel import RMW
 
 import sys
 
@@ -13,6 +14,7 @@ if __name__ == '__main__':
 
     layout = QtWidgets.QVBoxLayout()
     layout.addWidget(TrainModelWidget())
+    layout.addWidget(RMW())
     layout.addWidget(ManageModelWidget())
     temp_widget.setLayout(layout)
 
