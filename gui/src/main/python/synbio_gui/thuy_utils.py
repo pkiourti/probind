@@ -1,5 +1,4 @@
 import sys
-sys.path.insert(1, '../../../../../../synbio_project')
 
 from main import data_files
 import generator
