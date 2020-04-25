@@ -14,6 +14,7 @@ class FileDialog(QtWidgets.QWidget):
         self.filepath_input = QtWidgets.QLineEdit()
         self.filepath_input.setPlaceholderText("default filepath")
         self.filepath = ""
+        self.filter = "Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
 
         # folder icon
         self.folder_btn = QtWidgets.QPushButton()
@@ -28,7 +29,7 @@ class FileDialog(QtWidgets.QWidget):
         self.setLayout(filepath_layout)
 
     def get_file(self):
-        dlg = QtWidgets.QFileDialog(self, "Select file", filter="Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)")
+        dlg = QtWidgets.QFileDialog(self, "Select file", filter=self.filter)
         dlg.setFileMode(QtWidgets.QFileDialog.ExistingFile)
 
         if dlg.exec_():

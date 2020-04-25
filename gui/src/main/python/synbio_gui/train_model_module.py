@@ -1,7 +1,7 @@
 import sys
-#sys.path.insert(1, '../../../../../../synbio_project')
+sys.path.insert(1, '../../../../../../synbio_project')
 
-import train_wrapper
+from train_wrapper import TrainWrapper
 import thuy_utils
 
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -159,6 +159,9 @@ class TrainModelWidget(QtWidgets.QWidget):
     def train_model_dialog(self, random_data=True):
         if random_data:
             self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()
+            print('--------------------------------------------------')
+            print(self.x_fwd, self.x_rev, self.y)
+            print('--------------------------------------------------')
             input_str = "random data"
         else:
             input_str = "selected input data"

@@ -1,6 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from file_dialog import FileDialog, MultiFileDialog
 
+import utils
+
 
 class ManageModelWidget(QtWidgets.QWidget):
     """
@@ -18,9 +20,9 @@ class ManageModelWidget(QtWidgets.QWidget):
 
         # add menu items
         delete_action = QtWidgets.QAction("Delete Model", self)
-        delete_action.triggered.connect(lambda:self.input_dialog())
+        delete_action.triggered.connect(lambda:self.input_dialog(True))
         rename_action = QtWidgets.QAction("Rename model", self)
-        rename_action.triggered.connect(lambda:self.input_dialog(True))
+        rename_action.triggered.connect(lambda:self.input_dialog())
 
         manage_model_btn_menu.addAction(delete_action)
         manage_model_btn_menu.addAction(rename_action)
@@ -34,7 +36,14 @@ class ManageModelWidget(QtWidgets.QWidget):
         dialog = QtWidgets.QDialog()
         dialog.setWindowTitle("Select file to modify")
 
+        file_label = QtWidgets.QLabel("File: ")
         filepath = FileDialog() # select which file to change
+        filepath.filter = ""
+        file_layout = QtWidgets.QHBoxLayout()
+        file_layout.addWidget(file_label)
+        file_layout.addWidget(filepath)
+
+        newname_frame = QtWidgets.QFrame()
 
         new_name_label = QtWidgets.QLabel("New name: ")
         new_name_input = QtWidgets.QLineEdit()
@@ -42,7 +51,10 @@ class ManageModelWidget(QtWidgets.QWidget):
         new_name_layout = QtWidgets.QHBoxLayout()
         new_name_layout.addWidget(new_name_label)
         new_name_layout.addWidget(new_name_input)
-        new_name_layout.setVisible(False)
+        newname_frame.setLayout(new_name_layout)
+
+        if delete:
+            newname_frame.hide()
 
         # buttons
         cancel_btn = QtWidgets.QPushButton("Cancel")
@@ -51,18 +63,53 @@ class ManageModelWidget(QtWidgets.QWidget):
         ok_btn = QtWidgets.QPushButton("OK")
         ok_btn.clicked.connect(dialog.close)
 
-        if delete == True:
-            new_name_layout.setVisible(True)
-        #     # ok_btn.clicked.connect()
-        # else:
-        #     ok_btn.clicked.connect()
+        ok_btn.clicked.connect(lambda: self.check_inputs(inputs=[filepath.filepath, new_name_input.text()], delete=delete))
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel_btn)
         button_layout.addWidget(ok_btn)
 
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(filepath)
-        layout.addLayout(new_name_layout)
+        layout.addLayout(file_layout)
+        # layout.addLayout(new_name_layout)
+        layout.addWidget(newname_frame)
         layout.addLayout(button_layout)
         dialog.setLayout(layout)
+
+        dialog.exec_()
+
+    def check_inputs(self, inputs, delete):
+        invalid_inputs = False
+
+        if len(inputs) == 0:
+            invalid_inputs = True
+        else:
+            if delete:
+                if inputs[0] == "":
+                    invalid_inputs = True
+            else:
+                for i in inputs:
+                    if i == "":
+                        invalid_inputs = True
+                        break  # error message only appears once
+
+        if invalid_inputs:
+                alert = QtWidgets.QMessageBox()
+                alert.setText("Input must be non-empty")
+                alert.setWindowTitle("Invalid input")
+                alert.setIcon(QtWidgets.QMessageBox.Warning)
+                alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                alert.exec_()
+        else:
+            if delete:
+                try:
+                    utils.delete_model(inputs[0])
+                    alert = QtWidgets.QMessageBox()
+                    alert.setText("File deleted")
+                    alert.setWindowTitle("Confirmation")
+                    alert.setIcon(QtWidgets.QMessageBox.Information)
+                    alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    alert.exec_()
+                except:
+                    print("File not deleted.")
+            # else: # rename

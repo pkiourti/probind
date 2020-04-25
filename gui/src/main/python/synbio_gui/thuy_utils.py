@@ -131,10 +131,10 @@ def choose_random_input_data():
 
     i = 1
     # synbio_gui/python/main/src/gui/data
-    while os.path.exists(os.path.join('../../../../../data', 'x_forward_' + str(i) + '.npy')):
+    while os.path.exists(os.path.join('.', 'data', 'x_forward_' + str(i) + '.npy')):
         i += 1
 
-    choice = np.random.choice(np.arange(1,i+1), 1)
+    choice = np.random.choice(np.arange(1,i+1), 1)[0]
     x_fwd = "x_forward_" + str(choice) + ".npy"
     x_rev = "x_reverse_" + str(choice) + ".npy"
     y = "y_" + str(choice) + ".npy"

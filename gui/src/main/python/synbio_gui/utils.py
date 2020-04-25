@@ -8,16 +8,16 @@ def get_saved_models():
     return os.listdir('models')
 
 
-def delete_model(name):
+def delete_model(file_to_remove):
     """
     :args name: a string indicating which model to delete
     :return:
     """
-    file_to_remove = os.path.join('models', name)
+    # file_to_remove = os.path.join('models', name)
     try:
         os.remove(file_to_remove)
     except FileNotFoundError as e:
-        print(f'File {name} is not deleted. {e}')
+        print(f'File is not deleted. {e}')
 
 
 def data_files(data_dir_filepath):
