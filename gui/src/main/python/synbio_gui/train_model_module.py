@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(1, '../../../../../../synbio_project')
+#sys.path.insert(1, '../../../../../../synbio_project')
 
 import train_wrapper
 import thuy_utils
