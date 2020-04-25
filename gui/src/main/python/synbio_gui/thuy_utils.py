@@ -1,13 +1,13 @@
 import sys
 
-from main import data_files
-import generator
+from utils import data_files
+from generator import DNASeqGenerator
 
 import numpy as np
 import os
 
 bases = 4
-dna_seq_gen = DNASeqGenerator()
+dna_seq_gen = DNASeqGenerator(300)
 
 
 def switch(argument):

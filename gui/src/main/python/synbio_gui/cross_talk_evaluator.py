@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from cnn import CNN
+from gui.src.main.python.synbio_gui.cnn import CNN
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
