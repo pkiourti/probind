@@ -20,7 +20,7 @@ class TrainWrapper(object):
         self.name_x_reverse = x_reverse
         self.name_y = y
 
-        self.path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'data')
+        self.path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui')
         self.seed = 42
         self.model_name = model_name
         self.trained = False
@@ -36,9 +36,9 @@ class TrainWrapper(object):
         return cnn, optim
 
     def load_data(self, path, name_x_forward, name_x_reverse, name_y, dev):
-        dna_seqs_for = np.load(os.path.join(path, name_x_forward))
-        dna_seqs_rev = np.load(os.path.join(path, name_x_reverse))
-        dna_binding_values = np.load(os.path.join(path, name_y))
+        dna_seqs_for = np.load(os.path.join(path, 'data', name_x_forward))
+        dna_seqs_rev = np.load(os.path.join(path, 'data', name_x_reverse))
+        dna_binding_values = np.load(os.path.join(path, 'data', name_y))
 
         x_tensors_for = torch.FloatTensor(dna_seqs_for).unsqueeze(1).to(dev)
         x_tensors_rev = torch.FloatTensor(dna_seqs_rev).unsqueeze(1).to(dev)
@@ -56,17 +56,20 @@ class TrainWrapper(object):
         return train_loader, test_loader
 
     def save_model(self, model):
-        if not os.path.exists('models'):
-            os.makedirs('models')
+        models_path = os.path.join(self.path, 'models')
+        if not os.path.exists(models_path):
+            os.makedirs(models_path)
 
-        filename = os.path.join('models', self.model_name)
+        filename = os.path.join(models_path, self.model_name)
         if os.path.exists(filename):
             i = 1
             while os.path.exists(filename + '_' + str(i)):
                 i += 1
             torch.save(model.state_dict(), filename + '_' + str(i))
+            print(f'Model saved at {filename}_{str(i)}')
         else:
             torch.save(model.state_dict(), filename)
+            print(f'Model saved at {filename}')
 
     def train(self):
         dev = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -86,23 +89,21 @@ class TrainWrapper(object):
         start_time = time.time()
 
         for epoch in range(self.epochs):
-            for b, (X_train_forward, X_train_reverse, y_train) in enumerate(train_loader):
-                b += 1
+            for batch_idx, (X_train_forward, X_train_reverse, y_train) in enumerate(train_loader):
+                batch_idx += 1
                 pred = model(X_train_forward, X_train_reverse)
                 loss = model.loss(pred, y_train)
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
 
-                if b % 100 == 0:
-                    print(f'Epoch {epoch} batch {b} loss: {loss.item()}')
+                print(f'Epoch {epoch} batch {batch_idx} loss: {loss.item()}')
 
             train_losses.append(loss.item())
 
             # TEST
             with torch.no_grad():
-                for b, (X_test_forward, X_test_reverse, y_test) in enumerate(test_loader):
-                    b += 1
+                for X_test_forward, X_test_reverse, y_test in test_loader:
                     pred = model(X_test_forward, X_test_reverse)
 
             loss = model.loss(pred, y_test)
