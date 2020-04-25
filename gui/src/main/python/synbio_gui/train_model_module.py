@@ -10,7 +10,7 @@ from file_dialog import FileDialog, MultiFileDialog
 from test import test_print
 import os
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
 
@@ -159,9 +159,6 @@ class TrainModelWidget(QtWidgets.QWidget):
     def train_model_dialog(self, random_data=True):
         if random_data:
             self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()
-            print('--------------------------------------------------')
-            print(self.x_fwd, self.x_rev, self.y)
-            print('--------------------------------------------------')
             input_str = "random data"
         else:
             input_str = "selected input data"
@@ -288,18 +285,13 @@ class TrainModelWidget(QtWidgets.QWidget):
 
         canvas = FigureCanvas(figure)
 
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
-        toolbar = NavigationToolbar(canvas)
-
         # refresh canvas
         canvas.draw()
 
         ok_btn = QtWidgets.QPushButton("Ok")
         ok_btn.clicked.connect(dialog.close)
 
-        layout = QtGui.QVBoxLayout()
-        layout.addWidget(toolbar)
+        layout = QtWidgets.QVBoxLayout()
         layout.addWidget(canvas)
         layout.addWidget(ok_btn)
 

@@ -150,7 +150,7 @@ def check_avail_model_name(model_name):
     '''
     exists = False
     #models_path = '../../../../../models' # synbio_gui/python/main/src/gui/models
-    models_path = 'models' # synbio_gui/python/main/src/gui/models
+    models_path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'models') # synbio_gui/python/main/src/gui/models
 
     if not os.path.exists(models_path):
         os.makedirs(models_path)
