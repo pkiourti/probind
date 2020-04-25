@@ -1,8 +1,13 @@
+import sys
+sys.path.insert(1, '../../../../../../synbio_project')
+
+import train_wrapper
+import thuy_utils
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from file_dialog import FileDialog, MultiFileDialog
 from test import test_print
-import thuy_utils
 import os
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -31,6 +36,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.num_epochs = 0
         self.input_params = None
         self.console_output = None
+        self.x_fwd, self.x_rev, self.y = (None, None, None)
 
         # train model main button
         train_model_btn = QtWidgets.QPushButton("Train Model")
@@ -138,7 +144,7 @@ class TrainModelWidget(QtWidgets.QWidget):
             self.model_name = new_name
 
             if use_random_data:
-                self.train_model_dialog(input_data="random_data")
+                self.train_model_dialog()
             else:
                 self.load_data()
 
@@ -150,12 +156,20 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.console_output.ensureCursorVisible()
 
 
-    def train_model_dialog(self, input_data=None):
+    def train_model_dialog(self, random_data=True):
+        if random_data:
+            self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()
+            input_str = "random data"
+        else:
+            input_str = "selected input data"
+
+        train_wrapper = TrainWrapper(self.num_epochs, self.x_fwd, self.x_rev, self.y, self.model_name)
+
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Training model...")
         dialog.setFixedSize(600, 500)
 
-        label = QtWidgets.QLabel("Training model using " + str(input_data))
+        label = QtWidgets.QLabel("Training model using " + input_str)
 
         self.console_output = QtWidgets.QTextEdit()
         self.console_output.moveCursor(QtGui.QTextCursor.Start)
@@ -163,13 +177,20 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.console_output.setLineWrapColumnOrWidth(500)
         self.console_output.setLineWrapMode(QtWidgets.QTextEdit.FixedPixelWidth)
 
-        test_print() # where I would call Penny's code to train the the model using the data specified by the filepath
+        loss_fig = train_wrapper.train()
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(self.console_output)
 
         dialog.setLayout(layout)
+
+        while not train_wrapper.is_trained():
+            continue
+
+        if train_wrapper.is_trained():
+            self.plot_loss_figure(loss_fig)
+
         dialog.exec_()
 
     def load_data(self):
@@ -216,20 +237,32 @@ class TrainModelWidget(QtWidgets.QWidget):
         # check filepath extension
         file_ext = os.path.splitext(filepath_dialog.filepath)[1]
         if file_ext == ".txt":
-            thuy_utils.convert_text_to_numpy(filepath_dialog.filepath)
+            self.x_fwd, self.x_rev, self.y = thuy_utils.convert_text_to_numpy(filepath_dialog.filepath)
         elif file_ext == ".csv":
-            thuy_utils.convert_csv_to_numpy(filepath_dialog.filepath)
+            self.x_fwd, self.x_rev, self.y = thuy_utils.convert_csv_to_numpy(filepath_dialog.filepath)
         else:
             # if files are already .npy, saves to data folder
-            models_path = '../../../../../models'
+            data_path = '../../../../../data'
 
-            if not os.path.exists(models_path):
-                os.makedirs(models_path)
+            if not os.path.exists(data_path):
+                os.makedirs(data_path)
+
+            file_names = []
 
             for f in npy_filepaths_dialog.filepaths:
-                os.replace(f, os.path.join(models_path, os.path.splitext(os.path.basename(os.path.join(f)))[0], ".npy"))
+                name = os.path.splitext(os.path.basename(os.path.join(f)))[0]
+                file_names.append(name)
 
-        train_model_btn.clicked.connect(lambda:self.train_model_dialog(input_data="input_data")) # this will connect to Penny's train.py
+                if not os.path.exists(os.path.join(data_path, name + ".npy")):
+                    os.replace(f, os.path.join(data_path, name + ".npy"))
+
+            # assumption that there are only 2 .npy files
+            # and they are appropriately named x_forward_#.npy, y_#.npy
+            self.x_fwd = file_names[0]
+            self.x_rev = thuy_utils.gen_save_rev_seq(npy_filepaths_dialog.filepaths[0])
+            self.y = file_names[1]
+
+        train_model_btn.clicked.connect(lambda:self.train_model_dialog(random_data=False))
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel_btn)
@@ -259,9 +292,13 @@ class TrainModelWidget(QtWidgets.QWidget):
         # refresh canvas
         canvas.draw()
 
+        ok_btn = QtWidgets.QPushButton("Ok")
+        ok_btn.clicked.connect(dialog.close)
+
         layout = QtGui.QVBoxLayout()
-        layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
+        layout.addWidget(toolbar)
+        layout.addWidget(canvas)
+        layout.addWidget(ok_btn)
 
         dialog.setLayout(layout)
         dialog.exec_()
