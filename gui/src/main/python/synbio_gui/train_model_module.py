@@ -4,7 +4,6 @@ import thuy_utils
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from file_dialog import FileDialog, MultiFileDialog
-from test import test_print
 import os
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -152,14 +151,14 @@ class TrainModelWidget(QtWidgets.QWidget):
 
 
     def train_model_dialog(self, random_data=True):
-        load_dialog = QtWidgets.QDialog()
-        load_dialog.setWindowTitle("Training model")
-
-        load_dialog_layout = QtWidgets.QVBoxLayout()
-        load_dialog_layout.addWidget(QtWidgets.QLabel("Now training model..."))
-
-        load_dialog.setLayout(load_dialog_layout)
-        load_dialog.exec_()
+        # load_dialog = QtWidgets.QDialog()
+        # load_dialog.setWindowTitle("Training model")
+        #
+        # load_dialog_layout = QtWidgets.QVBoxLayout()
+        # load_dialog_layout.addWidget(QtWidgets.QLabel("Now training model..."))
+        #
+        # load_dialog.setLayout(load_dialog_layout)
+        # load_dialog.exec_()
 
         if random_data:
             self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()

@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from file_dialog import FileDialog, MultiFileDialog
+import os
 
 import utils
 
@@ -47,7 +48,7 @@ class ManageModelWidget(QtWidgets.QWidget):
 
         new_name_label = QtWidgets.QLabel("New name: ")
         new_name_input = QtWidgets.QLineEdit()
-        new_name_input.setPlaceholderText("[new name]")
+        new_name_input.setPlaceholderText("new name")
         new_name_layout = QtWidgets.QHBoxLayout()
         new_name_layout.addWidget(new_name_label)
         new_name_layout.addWidget(new_name_input)
@@ -102,14 +103,29 @@ class ManageModelWidget(QtWidgets.QWidget):
                 alert.exec_()
         else:
             if delete:
-                try:
-                    utils.delete_model(inputs[0])
-                    alert = QtWidgets.QMessageBox()
+                successful_delete, error_msg = utils.delete_model(inputs[0])
+                alert = QtWidgets.QMessageBox()
+                if successful_delete:
                     alert.setText("File deleted")
                     alert.setWindowTitle("Confirmation")
                     alert.setIcon(QtWidgets.QMessageBox.Information)
-                    alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                    alert.exec_()
-                except:
-                    print("File not deleted.")
-            # else: # rename
+                else:
+                    alert.setText("File not deleted. " + str(error_msg))
+                    alert.setWindowTitle("Error")
+                    alert.setIcon(QtWidgets.QMessageBox.Warning)
+                alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                alert.exec_()
+            else: # rename
+                new_name = os.path.join(os.path.dirname(inputs[0]), inputs[1])
+                successful_rename, error_msg = utils.rename(new_name, inputs[0])
+                alert = QtWidgets.QMessageBox()
+                if successful_rename:
+                    alert.setText("File renamed")
+                    alert.setWindowTitle("Confirmation")
+                    alert.setIcon(QtWidgets.QMessageBox.Information)
+                else:
+                    alert.setText("File not renamed. " + str(error_msg))
+                    alert.setWindowTitle("Error")
+                    alert.setIcon(QtWidgets.QMessageBox.Warning)
+                alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                alert.exec_()

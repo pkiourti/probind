@@ -8,6 +8,7 @@ import os
 bases = 4
 
 project_root = os.environ.get('PYTHONPATH')
+project_root = project_root.split(os.path.pathsep)[1]
 
 
 def switch(argument):

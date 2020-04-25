@@ -1,6 +1,7 @@
 import os
 
 project_root = os.environ.get('PYTHONPATH')
+project_root = project_root.split(os.path.pathsep)[1]
 
 def get_saved_models():
     """
@@ -16,8 +17,10 @@ def delete_model(file_to_remove):
     """
     try:
         os.remove(file_to_remove)
-    except FileNotFoundError as e:
+        return True, None
+    except Exception as e:
         print(f'File is not deleted. {e}')
+        return False, e
 
 
 def data_files(data_dir_filepath):
@@ -34,4 +37,9 @@ def data_files(data_dir_filepath):
 
 
 def rename(new_name, old_name):
-    os.rename(old_name, new_name)
+    try:
+        os.rename(old_name, new_name)
+        return True, None
+    except Exception as e:
+        print(f'File not renamed. {e}')
+        return False, e
