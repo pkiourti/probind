@@ -10,7 +10,6 @@ from backend.cnn import CNN
 
 TRAIN_SPLIT = 0.8
 
-
 class TrainWrapper(object):
 
     def __init__(self, epochs, x_forward, x_reverse, y, model_name):
@@ -20,7 +19,7 @@ class TrainWrapper(object):
         self.name_x_reverse = x_reverse
         self.name_y = y
 
-        self.path = os.path.join('/home/penny/project/synbio_project/gui', 'src', 'main', 'python', 'synbio_gui')
+        self.path = os.environ.get('PYTHONPATH')
         self.seed = 42
         self.model_name = model_name
         self.trained = False

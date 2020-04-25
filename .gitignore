@@ -1,6 +1,9 @@
 .idea/*
 .ipynb_*
 __pycache__/*
+gui/venv
+gui/src/main/python/synbio_gui/__pycache__/*
+backend/__pycache__/*
 *.npy
 *.ipynb
 model
