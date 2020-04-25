@@ -132,14 +132,12 @@ class TrainModelWidget(QtWidgets.QWidget):
             new_name = inputs[0]
             self.num_epochs = int(inputs[1])
 
-            print(inputs[0])
             name_exists = thuy_utils.check_avail_model_name(inputs[0])
 
             i = 1
             while(name_exists == True):
-                print('avail_name:', avail_name)
                 new_name = inputs[0] + "_" + str(i)
-                avail_name = thuy_utils.check_avail_model_name(new_name)
+                name_exists = thuy_utils.check_avail_model_name(new_name)
 
             self.model_name = new_name
 
@@ -157,13 +155,20 @@ class TrainModelWidget(QtWidgets.QWidget):
 
 
     def train_model_dialog(self, random_data=True):
+        load_dialog = QtWidgets.QDialog()
+        load_dialog.setWindowTitle("Training model")
+
+        load_dialog_layout = QtWidgets.QVBoxLayout()
+        load_dialog_layout.addWidget(QtWidgets.QLabel("Now training model..."))
+
+        load_dialog.setLayout(load_dialog_layout)
+        load_dialog.exec_()
+
         if random_data:
             self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()
             input_str = "random data"
         else:
             input_str = "selected input data"
-
-        train_wrapper = TrainWrapper(self.num_epochs, self.x_fwd, self.x_rev, self.y, self.model_name)
 
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Training model...")
@@ -177,21 +182,26 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.console_output.setLineWrapColumnOrWidth(500)
         self.console_output.setLineWrapMode(QtWidgets.QTextEdit.FixedPixelWidth)
 
+        train_wrapper = TrainWrapper(self.num_epochs, self.x_fwd, self.x_rev, self.y, self.model_name)
         loss_fig = train_wrapper.train()
+
+        plot_btn = QtWidgets.QPushButton("Plot losses")
+        plot_btn.clicked.connect(lambda: self.plot_loss_figure(loss_fig))
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(self.console_output)
+        layout.addWidget(plot_btn)
 
         dialog.setLayout(layout)
-
-        while not train_wrapper.is_trained():
-            continue
-
-        if train_wrapper.is_trained():
-            self.plot_loss_figure(loss_fig)
-
         dialog.exec_()
+
+        # while not train_wrapper.is_trained():
+        #     continue
+        #
+        # if train_wrapper.is_trained():
+        #     self.plot_loss_figure(loss_fig)
+
 
     def load_data(self):
         dialog = QtWidgets.QDialog(self.input_params)
@@ -242,7 +252,7 @@ class TrainModelWidget(QtWidgets.QWidget):
             self.x_fwd, self.x_rev, self.y = thuy_utils.convert_csv_to_numpy(filepath_dialog.filepath)
         else:
             # if files are already .npy, saves to data folder
-            data_path = '../../../../../data'
+            data_path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'data')
 
             if not os.path.exists(data_path):
                 os.makedirs(data_path)
