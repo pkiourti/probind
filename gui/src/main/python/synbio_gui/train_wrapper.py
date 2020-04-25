@@ -20,7 +20,7 @@ class TrainWrapper(object):
         self.name_x_reverse = x_reverse
         self.name_y = y
 
-        self.path = 'data'
+        self.path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'data')
         self.seed = 42
         self.model_name = model_name
         self.trained = False
@@ -97,7 +97,7 @@ class TrainWrapper(object):
                 if b % 100 == 0:
                     print(f'Epoch {epoch} batch {b} loss: {loss.item()}')
 
-            train_losses.append(loss)
+            train_losses.append(loss.item())
 
             # TEST
             with torch.no_grad():
@@ -106,7 +106,7 @@ class TrainWrapper(object):
                     pred = model(X_test_forward, X_test_reverse)
 
             loss = model.loss(pred, y_test)
-            test_losses.extend([loss])
+            test_losses.extend([loss.item()])
 
         total_time = time.time() - start_time
         print(f'Total training time: {total_time / 60} mins')
@@ -119,8 +119,8 @@ class TrainWrapper(object):
     def get_figure(self, train_losses, test_losses):
         figure = plt.figure()
         ax = figure.add_subplot()
-        ax.imshow([i for i in range(self.epochs)], train_losses, label='train')
-        ax.imshow([i for i in range(self.epochs)], test_losses, label='test')
+        ax.plot([i for i in range(self.epochs)], train_losses, label='train')
+        ax.plot([i for i in range(self.epochs)], test_losses, label='test')
         ax.legend()
         plt.title("Loss throughout training epochs")
         plt.xlabel("epoch")
