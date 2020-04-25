@@ -52,7 +52,7 @@ def convert_dna_seq_to_matrix(dna_seq):
 # saves data from .txt file to .npy file in /data
 # appropriate shape is # samples x 4 x 300 ?
 def convert_txt_to_npy(txt_filepath):
-    forward_file, reverse_file, bind_v_file = data_files(project_root, 'data')
+    forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
 
     file = open(txt_filepath, "r")
 
@@ -88,7 +88,7 @@ def convert_txt_to_npy(txt_filepath):
 
 
 def convert_csv_to_npy(csv_filepath):
-    forward_file, reverse_file, bind_v_file = data_files(project_root, 'data')
+    forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
 
     file = open("dna_seq.txt", "r")
 
@@ -145,7 +145,7 @@ def choose_random_input_data():
 
     i = 1
     # synbio_gui/python/main/src/gui/data
-    while os.path.exists(os.path.join('.', 'data', 'x_forward_' + str(i) + '.npy')):
+    while os.path.exists(os.path.join(project_root, 'data', 'x_forward_' + str(i) + '.npy')):
         i += 1
 
     choice = np.random.choice(np.arange(1, i + 1), 1)[0]

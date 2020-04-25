@@ -10,6 +10,9 @@ from backend.cnn import CNN
 
 TRAIN_SPLIT = 0.8
 
+project_root = os.environ.get('PYTHONPATH')
+project_root = project_root.split(os.path.pathsep)[1]
+
 class TrainWrapper(object):
 
     def __init__(self, epochs, x_forward, x_reverse, y, model_name):
@@ -19,7 +22,7 @@ class TrainWrapper(object):
         self.name_x_reverse = x_reverse
         self.name_y = y
 
-        self.path = os.environ.get('PYTHONPATH')
+        self.path = project_root
         self.seed = 42
         self.model_name = model_name
         self.trained = False
