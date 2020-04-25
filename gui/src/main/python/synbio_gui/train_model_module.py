@@ -1,7 +1,4 @@
-import sys
-sys.path.insert(1, '../../../../../../synbio_project')
-
-from train_wrapper import TrainWrapper
+from backend.train_wrapper import TrainWrapper
 import thuy_utils
 
 from PyQt5 import QtCore, QtGui, QtWidgets

@@ -1,13 +1,13 @@
 import sys
 
 from utils import data_files
-from generator import DNASeqGenerator
 
 import numpy as np
 import os
 
 bases = 4
-dna_seq_gen = DNASeqGenerator(300)
+
+project_root = os.environ.get('PYTHONPATH')
 
 
 def switch(argument):
@@ -18,6 +18,17 @@ def switch(argument):
         "G": 3,
     }
     return switcher.get(argument, "Invalid base")
+
+
+def complement_base(idx):
+    if idx == 0:
+        return 1
+    elif idx == 1:
+        return 0
+    elif idx == 2:
+        return 3
+    elif idx == 3:
+        return 2
 
 
 def convert_dna_seq_to_matrix(dna_seq):
@@ -40,7 +51,7 @@ def convert_dna_seq_to_matrix(dna_seq):
 # saves data from .txt file to .npy file in /data
 # appropriate shape is # samples x 4 x 300 ?
 def convert_txt_to_npy(txt_filepath):
-    forward_file, reverse_file, bind_v_file = data_files('../../../../../data')
+    forward_file, reverse_file, bind_v_file = data_files(project_root, 'data')
 
     file = open(txt_filepath, "r")
 
@@ -61,7 +72,7 @@ def convert_txt_to_npy(txt_filepath):
     # convert DNA seq to matrix of 0s and 1s
     identity_matrix = np.eye(bases, dtype=int)
     forward = np.asarray(dna_seq)
-    reverse = np.flip([identity_matrix[dna_seq_gen.complement_base(np.argmax(i))].tolist() for i in forward], 0)
+    reverse = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in forward], 0)
     binding_value = np.asarray(binding_vals)
 
     np.save(forward_file + '.npy', forward)
@@ -76,7 +87,7 @@ def convert_txt_to_npy(txt_filepath):
 
 
 def convert_csv_to_npy(csv_filepath):
-    forward_file, reverse_file, bind_v_file = data_files()
+    forward_file, reverse_file, bind_v_file = data_files(project_root, 'data')
 
     file = open("dna_seq.txt", "r")
 
@@ -97,7 +108,7 @@ def convert_csv_to_npy(csv_filepath):
     # convert DNA seq to matrix of 0s and 1s
     identity_matrix = np.eye(bases, dtype=int)
     forward = np.asarray(dna_seq)
-    reverse = np.flip([identity_matrix[dna_seq_gen.complement_base(np.argmax(i))].tolist() for i in forward], 0)
+    reverse = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in forward], 0)
     binding_value = np.asarray(binding_vals)
 
     np.save(forward_file + '.npy', forward)
@@ -110,18 +121,20 @@ def convert_csv_to_npy(csv_filepath):
 
     return x_fwd, x_rev, y
 
+
 def gen_save_rev_seq(fwd_seq_filepath):
     fwd_seq_file_name = os.path.splitext(os.path.basename(fwd_seq_filepath))[0]
     fwd_seq = np.load(fwd_seq_filepath)
-    identity_matrix = np.eye(self.bases, dtype=int)
-    rev_compl = np.flip([identity_matrix[self.complement_base(np.argmax(i))].tolist() for i in fwd_seq], 0)
+    identity_matrix = np.eye(bases, dtype=int)
+    rev_compl = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq], 0)
 
-    name_int = fwd_seq_file_name[ fwd_seq_file_name.find('_', 2)+1 : ]
+    name_int = fwd_seq_file_name[fwd_seq_file_name.find('_', 2) + 1:]
     rev_file_name = 'x_reverse_' + name_int + '.npy'
 
-    np.save(os.path.join('../../../../../data', rev_file_name), rev_compl)
+    np.save(os.path.join(project_root, 'data', rev_file_name), rev_compl)
 
     return rev_file_name
+
 
 def choose_random_input_data():
     '''
@@ -134,7 +147,7 @@ def choose_random_input_data():
     while os.path.exists(os.path.join('.', 'data', 'x_forward_' + str(i) + '.npy')):
         i += 1
 
-    choice = np.random.choice(np.arange(1,i+1), 1)[0]
+    choice = np.random.choice(np.arange(1, i + 1), 1)[0]
     x_fwd = "x_forward_" + str(choice) + ".npy"
     x_rev = "x_reverse_" + str(choice) + ".npy"
     y = "y_" + str(choice) + ".npy"
@@ -149,8 +162,7 @@ def check_avail_model_name(model_name):
     Returns True or False.
     '''
     exists = False
-    #models_path = '../../../../../models' # synbio_gui/python/main/src/gui/models
-    models_path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'models') # synbio_gui/python/main/src/gui/models
+    models_path = os.path.join(project_root, 'models')  # synbio_gui/python/main/src/gui/models
 
     if not os.path.exists(models_path):
         os.makedirs(models_path)

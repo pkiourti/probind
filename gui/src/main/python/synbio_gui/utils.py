@@ -1,11 +1,12 @@
 import os
 
+project_root = os.environ.get('PYTHONPATH')
 
 def get_saved_models():
     """
     :return: a python list of all saved models. By convention all models are saved under models/.
     """
-    return os.listdir('models')
+    return os.listdir(os.path.join(project_root, 'models'))
 
 
 def delete_model(file_to_remove):
@@ -13,7 +14,6 @@ def delete_model(file_to_remove):
     :args name: a string indicating which model to delete
     :return:
     """
-    # file_to_remove = os.path.join('models', name)
     try:
         os.remove(file_to_remove)
     except FileNotFoundError as e:
@@ -32,3 +32,6 @@ def data_files(data_dir_filepath):
             os.path.join(data_dir_filepath, 'x_reverse_' + str(i)),
             os.path.join(data_dir_filepath, 'y_' + str(i)))
 
+
+def rename(new_name, old_name):
+    os.rename(old_name, new_name)
