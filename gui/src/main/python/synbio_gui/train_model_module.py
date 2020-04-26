@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from file_dialog import FileDialog, MultiFileDialog
 import os
+import time
 import shutil
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
@@ -181,7 +182,21 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.console_output.setLineWrapMode(QtWidgets.QTextEdit.FixedPixelWidth)
 
         train_wrapper = TrainWrapper(self.num_epochs, self.x_fwd, self.x_rev, self.y, self.model_name)
-        loss_fig = train_wrapper.train()
+        # loss_fig = train_wrapper.train()
+
+        start_time = time.time()
+        batches = train_wrapper.get_num_batches()
+        for epoch in range(train_wrapper.epochs):
+            while train_wrapper.get_batch_idx() < batches:
+                train_wrapper.one_step_train(epoch)
+            train_wrapper.test()
+            train_wrapper.reset()
+
+        total_time = time.time() - start_time
+        print(f'Total training time: {total_time / 60} mins')
+        train_wrapper.save_model()
+        loss_fig = train_wrapper.get_figure()
+
 
         plot_btn = QtWidgets.QPushButton("Plot losses")
         plot_btn.clicked.connect(lambda: self.plot_loss_figure(loss_fig))
