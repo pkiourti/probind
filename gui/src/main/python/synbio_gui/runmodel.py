@@ -147,6 +147,7 @@ class RMW(QtWidgets.QWidget):
                                                                           \nGo to [url for github docs] for example file formats.")
 
             filepath = DataLoaderWidget()
+            filepath.test = True
 
             cancel = QtWidgets.QPushButton("Cancel")
             cancel.clicked.connect(dialog.close)

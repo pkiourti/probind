@@ -19,6 +19,7 @@ class DataLoaderWidget(QtWidgets.QDialog):
         self.x_fwd = ""
         self.x_rev = ""
         self.y = ""
+        self.test = False
 
         # create widgets
         text_label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
@@ -60,7 +61,7 @@ class DataLoaderWidget(QtWidgets.QDialog):
         # train_model_btn.clicked.connect(self.input_params.close)
         train_model_btn.clicked.connect(self.close)
 
-        train_model_btn.clicked.connect(lambda:self.process_selected_files(inputs=[filepath_dialog.filepath, npy_filepaths_dialog.filepaths]))
+        train_model_btn.clicked.connect(lambda:self.process_selected_files(inputs=[filepath_dialog.filepath, npy_filepaths_dialog.filepaths],test=self.test))
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel_btn)
