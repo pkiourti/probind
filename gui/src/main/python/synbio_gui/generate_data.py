@@ -3,6 +3,7 @@ from utils import data_files
 
 from PyQt5 import QtWidgets
 import os
+import numpy as np
 
 project_root = os.environ.get('PYTHONPATH')
 try:
