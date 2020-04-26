@@ -147,7 +147,7 @@ class RMW(QtWidgets.QWidget):
             filepath = DataLoaderWidget(True, "Run")
 
             self.bind1, self.bind2 = self.cross_talk_evaluator.run(filepath.x_fwd,
-                                                                   filepath.x_rev)
+                                                                   filepath.y)
 
             layout = QtWidgets.QVBoxLayout()
             layout.addWidget(filepath)
