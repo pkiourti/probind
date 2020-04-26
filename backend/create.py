@@ -1,7 +1,8 @@
 import numpy as np
 import os
-from generator import DNASeqGenerator
+from generator import Generator
 
+project_root = os.environ.get('PYTHONPATH')
 
 def data_files(data_dir_filepath):
     i = 1
@@ -17,13 +18,10 @@ def data_files(data_dir_filepath):
 
 
 if __name__ == '__main__':
-    seq_generator = DNASeqGenerator(300)
+    generator = Generator(300, 1000)
 
-    seq = np.asarray([seq_generator.create_random_seq() for _ in range(2000)])
-    forward = np.asarray(seq)[:, 0]
-    reverse = np.asarray(seq)[:, 1]
-    binding_value = [seq_generator.create_random_bind_value() for _ in range(2000)]
-    forward_file, reverse_file, bind_v_file = data_files('data')
+    forward, reverse, binding_values = generator.create_random_dataset()
+    forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
     np.save(forward_file + '.npy', forward)
     np.save(reverse_file + '.npy', reverse)
-    np.save(bind_v_file + '.npy', binding_value)
+    np.save(bind_v_file + '.npy', binding_values)
