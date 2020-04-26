@@ -1,13 +1,15 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from PyQt5.QtWidgets import (QLabel, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
+#from cross_talk_evaluator import CrossTalkEvaluator
+from utils import get_saved_models
+import os
 from file_dialog import FileDialog
 
 class RMW(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(RMW, self).__init__(*args, **kwargs)
-        # self.setFixedWidth(250)
 
         rm_button = QtWidgets.QPushButton("Run Model")
 
@@ -16,22 +18,21 @@ class RMW(QtWidgets.QWidget):
         self.setLayout(layout)
         rm_button.clicked.connect(self.evalparam)
 
-    def run_model(self): # will fix later; this is the graph stuff
+    def run_model(self): # output graph
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Output graph")
 
-        dialog.setLayout(layout)
+
+
         dialog.exec_()
 
-
-    def evalparam(self): # have to fix layout -- meaning sizes/placements of widgets etc
+    def evalparam(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Evaluation Parameters")
 
         label1 = QtWidgets.QLabel("Choose Model")
         combo = QComboBox(self)
-        # need to add list of stuff to put in combo box
-        # make sure it's list of user inputs
+        # items in combo box will be from train model/manage model
 
         label2 = QtWidgets.QLabel("Input sequences")
 
@@ -50,8 +51,8 @@ class RMW(QtWidgets.QWidget):
 
         cancel = QtWidgets.QPushButton("Cancel")
         cancel.clicked.connect(dialog.close)
-        ok = QtWidgets.QPushButton("OK") # not working rn -- will fix this and clicked.connect
-        #ok.clicked.connect()
+        ok = QtWidgets.QPushButton("OK") #ok --> disable if no model
+        ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs?
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel)
@@ -76,27 +77,27 @@ class RMW(QtWidgets.QWidget):
 
         dialog.exec_()
 
-    def uploaddata(self): # stuff is commented out rn bc i'm trying to get rid of the dialog thing
-       # dialog = QtWidgets.QDialog(self)
-      #  dialog.setWindowTitle("Evaluation Parameters")
-        up_data = self.sender()
-        if up_data.isChecked():
+    def uploaddata(self):
+       dialog = QtWidgets.QDialog(self)
+       dialog.setWindowTitle("Evaluation Parameters")
+       up_data = self.sender()
+       if up_data.isChecked():
             label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
                                                                           \nGo to [url for github docs] for example file formats.");
 
-            filepath = FileDialog()  # using Thuy's code
+            filepath = FileDialog()
 
-            #cancel = QtWidgets.QPushButton("Cancel")
-            #cancel.clicked.connect(dialog.close)
-            #ok = QtWidgets.QPushButton("OK")
-            #ok.clicked.connect(lambda: self.run_model(input_data="input_data"))
+            cancel = QtWidgets.QPushButton("Cancel")
+            cancel.clicked.connect(dialog.close)
+            ok = QtWidgets.QPushButton("OK")
+            ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs? -- disable if no model
 
-            # button_layout = QtWidgets.QHBoxLayout()
-            # button_layout.addWidget(cancel)
-            # button_layout.addWidget(ok)
+            button_layout = QtWidgets.QHBoxLayout()
+            button_layout.addWidget(cancel)
+            button_layout.addWidget(ok)
             layout = QtWidgets.QVBoxLayout()
             layout.addWidget(label)
             layout.addWidget(filepath)
-            # layout.addLayout(button_layout)
-            # dialog.setLayout(layout)
-            # dialog.exec_()
+            layout.addLayout(button_layout)
+            dialog.setLayout(layout)
+            dialog.exec_()
