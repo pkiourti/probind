@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QLabel, QSlider, QRadioButton, QPushButton, QComboB
 from PyQt5.QtCore import Qt
 from file_dialog import FileDialog, MultiFileDialog
 from utils import get_saved_models
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from backend.cross_talk_evaluator import CrossTalkEvaluator
 
 project_root = os.environ.get('PYTHONPATH')
@@ -60,6 +61,9 @@ class RMW(QtWidgets.QWidget):
         # seq1, seq2 can be either strings or numpy arrays (I accept both and have tested it)
         bind_values_1, bind_values_2 = cross_talk_eval.run(seq1,seq2)
         figure = plot_bindings(threshold, bind_values_1, bind_values_2)
+
+        canvas = FigureCanvas(figure)
+        canvas.draw()
 
         layout = QVBoxLayout()
         label = QLabel("Threshold")
