@@ -143,25 +143,14 @@ class RMW(QtWidgets.QWidget):
         dialog.setWindowTitle("Evaluation Parameters")
         up_data = self.sender()
         if up_data.isChecked():
-            label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
-                                                                          \nGo to [url for github docs] for example file formats.")
 
-            filepath = DataLoaderWidget()
-            filepath.test = True
+            filepath = DataLoaderWidget(True, "Run")
 
-            cancel = QtWidgets.QPushButton("Cancel")
-            cancel.clicked.connect(dialog.close)
-            self.ok = QtWidgets.QPushButton("OK")
-            self.ok.clicked.connect(lambda: self.threshold_change())
-            self.ok.setEnabled(False)
+            self.bind1, self.bind2 = self.cross_talk_evaluator.run(filepath.x_fwd,
+                                                                   filepath.x_rev)
 
-            button_layout = QtWidgets.QHBoxLayout()
-            button_layout.addWidget(cancel)
-            button_layout.addWidget(self.ok)
             layout = QtWidgets.QVBoxLayout()
-            layout.addWidget(label)
             layout.addWidget(filepath)
-            layout.addLayout(button_layout)
             dialog.setLayout(layout)
             dialog.exec_()
 

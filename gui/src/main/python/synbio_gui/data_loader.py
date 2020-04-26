@@ -9,8 +9,8 @@ import numpy as np
 
 class DataLoaderWidget(QtWidgets.QDialog):
 
-    def __init__(self, *args, **kwargs):
-        super(DataLoaderWidget, self).__init__(*args, **kwargs)
+    def __init__(self, test, label):
+        super(DataLoaderWidget, self).__init__()
 
         self.setWindowTitle("Select file to load data from")
         self.setFixedHeight(300)
@@ -19,7 +19,8 @@ class DataLoaderWidget(QtWidgets.QDialog):
         self.x_fwd = ""
         self.x_rev = ""
         self.y = ""
-        self.test = False
+        self.test = test
+        self.label = label
 
         # create widgets
         text_label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
@@ -57,7 +58,7 @@ class DataLoaderWidget(QtWidgets.QDialog):
         # cancel_btn.clicked.connect(self.input_params.close)
         cancel_btn.clicked.connect(self.close)
 
-        train_model_btn = QtWidgets.QPushButton("Train model with this data")
+        train_model_btn = QtWidgets.QPushButton(self.label)
         # train_model_btn.clicked.connect(self.input_params.close)
         train_model_btn.clicked.connect(self.close)
 
