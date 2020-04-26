@@ -45,7 +45,7 @@ class CrossTalkEvaluator(object):
 
         device = torch.device(dev)
         cnn.to(device)
-        cnn.load_state_dict(torch.load(os.path.join('models', model_name)))
+        cnn.load_state_dict(torch.load(os.path.join(project_root, 'models', model_name)))
         cnn.eval()
 
         return cnn
