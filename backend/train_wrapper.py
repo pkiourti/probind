@@ -114,7 +114,7 @@ class TrainWrapper(object):
         if self.get_batch_idx() == self.get_num_batches():
             self.train_losses.append(loss.item())
 
-        print(f'Epoch {epoch} batch {self.get_batch_idx()} loss: {loss.item()}')
+        return 'Epoch ' + str(epoch) + ' batch ' + str(self.get_batch_idx()) + ' loss: ' + str(loss.item()) + ' \n'
 
     def test(self):
         with torch.no_grad():

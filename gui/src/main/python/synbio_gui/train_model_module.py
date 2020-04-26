@@ -11,6 +11,10 @@ import shutil
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+from worker import Worker
+
+
+sig_abort_workers = QtCore.pyqtSignal()
 
 
 class Stream(QtCore.QObject):
@@ -160,15 +164,6 @@ class TrainModelWidget(QtWidgets.QWidget):
         self.console_output.ensureCursorVisible()
 
     def train_model_dialog(self, random_data=True):
-        # load_dialog = QtWidgets.QDialog()
-        # load_dialog.setWindowTitle("Training model")
-        #
-        # load_dialog_layout = QtWidgets.QVBoxLayout()
-        # load_dialog_layout.addWidget(QtWidgets.QLabel("Now training model..."))
-        #
-        # load_dialog.setLayout(load_dialog_layout)
-        # load_dialog.exec_()
-
         if random_data:
             self.x_fwd, self.x_rev, self.y = utils.choose_random_input_data()
             input_str = "random data"
@@ -189,44 +184,27 @@ class TrainModelWidget(QtWidgets.QWidget):
 
         self.train_wrapper = TrainWrapper(self.num_epochs, self.x_fwd, self.x_rev, self.y, self.model_name)
 
-        # plot_btn = QtWidgets.QPushButton("Plot losses")
-        # plot_btn.clicked.connect(lambda: self.plot_loss_figure(loss_fig))
-
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(self.console_output)
-        # layout.addWidget(plot_btn)
+
+        worker = Worker(self.train_wrapper)
+        thread = QtCore.QThread()
+        worker.moveToThread(thread)
+
+        # get progress messages from worker:
+        worker.sig_done.connect(lambda:self.plot_loss_figure(worker.train_wrapper.get_figure()))
+        # worker.sig_done.connect(thread.quit())
+        worker.sig_msg.connect(lambda:self.update_output_log(worker.text))
+
+        thread.started.connect(worker.work)
+        thread.start()
 
         dialog.setLayout(layout)
         dialog.exec_()
 
-        self.run_train()
-
-        # while not train_wrapper.is_trained():
-        #     continue
-        #
-        # if train_wrapper.is_trained():
-        #     self.plot_loss_figure(loss_fig)
-
-    def run_train(self):
-        start_time = time.time()
-        batches = self.train_wrapper.get_num_batches()
-        for epoch in range(self.train_wrapper.epochs):
-            while self.train_wrapper.get_batch_idx() < batches:
-                self.train_wrapper.one_step_train(epoch)
-            self.train_wrapper.test()
-            self.train_wrapper.reset()
-
-        total_time = time.time() - start_time
-        print(f'Total training time: {total_time / 60} mins')
-        self.train_wrapper.save_model()
-
-        fig = self.train_wrapper.get_figure()
-
-        self.plot_loss_figure(fig)
-
-    # def load_data(self):
-
+    def update_output_log(self, new_text):
+        self.console_output.setText(new_text)
 
     def plot_loss_figure(self, figure):
         dialog = QtWidgets.QDialog()
