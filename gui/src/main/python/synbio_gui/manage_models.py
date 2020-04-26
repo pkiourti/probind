@@ -13,7 +13,7 @@ class ManageModelWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(ManageModelWidget, self).__init__(*args, **kwargs)
-        self.setFixedWidth(250)
+        # self.setFixedWidth(250)
 
         # train model main button
         manage_model_btn = QtWidgets.QPushButton("Manage Models")

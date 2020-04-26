@@ -25,7 +25,7 @@ class TrainModelWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(TrainModelWidget, self).__init__(*args, **kwargs)
-        self.setFixedWidth(250)
+        # self.setFixedWidth(250)
 
         # initialize variables to be referenced later throughout module
         self.model_name = ""
