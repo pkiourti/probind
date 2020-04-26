@@ -134,6 +134,7 @@ class TrainModelWidget(QtWidgets.QWidget):
             while(name_exists == True):
                 new_name = inputs[0] + "_" + str(i)
                 name_exists = utils.check_avail_model_name(new_name)
+                i += 1
 
             self.model_name = new_name
 
@@ -223,7 +224,11 @@ class TrainModelWidget(QtWidgets.QWidget):
 
         # filepath widget
         filepath_dialog = FileDialog()
+        filepath_dialog.directory = os.path.join(filepath_dialog.directory, 'data')
+        filepath_dialog.filter = "Text files (*.txt);; CSV files (*.csv)"
         npy_filepaths_dialog = MultiFileDialog()
+        npy_filepaths_dialog.directory = os.path.join(npy_filepaths_dialog.directory, 'data')
+        npy_filepaths_dialog.filter = "Numpy files (*.npy)"
         npy_filepaths_dialog.setVisible(False)
 
         csv_txt_btn.toggled.connect(lambda:filepath_dialog.setVisible(True))

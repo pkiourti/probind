@@ -1,5 +1,10 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import os
+
+project_root = os.environ.get('PYTHONPATH')
+project_root = project_root.split(os.path.pathsep)[1]
+
 
 class FileDialog(QtWidgets.QWidget):
     """
@@ -14,6 +19,7 @@ class FileDialog(QtWidgets.QWidget):
         self.filepath_input = QtWidgets.QLineEdit()
         self.filepath_input.setPlaceholderText("default filepath")
         self.filepath = ""
+        self.directory = project_root
         self.filter = "Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
 
         # folder icon
@@ -29,7 +35,7 @@ class FileDialog(QtWidgets.QWidget):
         self.setLayout(filepath_layout)
 
     def get_file(self):
-        dlg = QtWidgets.QFileDialog(self, "Select file", filter=self.filter)
+        dlg = QtWidgets.QFileDialog(self, "Select file", directory=self.directory, filter=self.filter)
         dlg.setFileMode(QtWidgets.QFileDialog.ExistingFile)
 
         if dlg.exec_():
@@ -52,6 +58,8 @@ class MultiFileDialog(QtWidgets.QWidget):
         self.filepaths_input.setPlaceholderText("[Selected files...]")
         self.filepaths_input.setDisabled(True)
         self.filepaths = []
+        self.directory = project_root
+        self.filter = "Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
 
         # folder icon
         self.folder_btn = QtWidgets.QPushButton()
@@ -66,7 +74,7 @@ class MultiFileDialog(QtWidgets.QWidget):
         self.setLayout(filepath_layout)
 
     def get_files(self):
-        dlg = QtWidgets.QFileDialog(self, "Select files", filter="Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)")
+        dlg = QtWidgets.QFileDialog(self, "Select files", directory=self.directory, filter=self.filter)
         dlg.setFileMode(QtWidgets.QFileDialog.ExistingFiles)
 
         if dlg.exec_():
