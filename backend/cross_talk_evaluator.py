@@ -1,13 +1,23 @@
 import torch
 import numpy as np
-from gui.src.main.python.synbio_gui.cnn import CNN
+from backend.cnn import CNN
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import os
 import seaborn as sns
+from typing import Union
 from matplotlib import colors as mcolors
+
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 plt.style.use('seaborn-dark')
+
+project_root = os.environ.get('PYTHONPATH')
+try:
+    project_root = project_root.split(os.path.pathsep)[1]
+except Exception as e:
+    pass
+
+base_idx_mapping = {'A': 0, 'T': 1, 'C': 2, 'G': 3}
 
 
 class CrossTalkEvaluator(object):
@@ -51,8 +61,36 @@ class CrossTalkEvaluator(object):
         elif idx == 3:
             return 2
 
+    def seq_to_array(self, seq):
+        list = []
+        identity = np.eye(4)
+        for base in seq:
+            list.extend([identity[base_idx_mapping[base]].tolist()])
 
-    def run(self, seq_1, seq_2):
+        return np.transpose(np.asarray(list))
+
+    def convert_seqs_to_array(self, seq_1: Union[str, np.ndarray], seq_2: Union[str, np.ndarray]):
+        seq_1 = self.seq_to_array(seq_1) if type(seq_1) == str else seq_1
+        seq_2 = self.seq_to_array(seq_2) if type(seq_2) == str else seq_2
+
+        return seq_1, seq_2
+
+    def predict_binding(self, seq_length, x_forward, x_reverse):
+        input_length = self.model.input_length
+        no_of_bind_values = int(seq_length / input_length)
+
+        bind_values = []
+        for i in range(no_of_bind_values):
+            start = i * input_length
+            end = start + input_length
+            binding = self.model.forward(x_forward[:, :, :, start: end], x_reverse[:, :, :, start: end])
+            bind_values.extend([binding.item()])
+        return bind_values
+
+    def run(self, seq_1: Union[str, np.ndarray], seq_2: Union[str, np.ndarray]):
+
+        seq_1, seq_2 = self.convert_seqs_to_array(seq_1, seq_2)
+
         x_reverse_1, x_reverse_2 = self.compute_reverse_complements(seq_1, seq_2)
 
         x_forward_1 = torch.FloatTensor(seq_1.copy()).unsqueeze(0).unsqueeze(0).to(self.dev)
@@ -60,31 +98,32 @@ class CrossTalkEvaluator(object):
         x_reverse_1 = torch.FloatTensor(x_reverse_1.copy()).unsqueeze(0).unsqueeze(0).to(self.dev)
         x_reverse_2 = torch.FloatTensor(x_reverse_2.copy()).unsqueeze(0).unsqueeze(0).to(self.dev)
 
-        length = self.model.input_length
-
-        bind_values_1 = []
-        no_of_bind_values = int(seq_1.shape[-1]/length)
-        for i in range(no_of_bind_values):
-            start = i * length
-            end = start + length
-            value = self.model.forward(x_forward_1[:, :, :, start: end], x_reverse_1[:, :, :, start: end])
-            bind_values_1.extend([value.item()])
-
-        bind_values_2 = []
-        no_of_bind_values = int(seq_1.shape[-1] / length)
-        for i in range(no_of_bind_values):
-            start = i * length
-            end = start + length
-            value = self.model.forward(x_forward_2[:, :, :, start: end], x_reverse_2[:, :, :, start: end])
-            bind_values_2.extend([value.item()])
+        bind_values_1 = self.predict_binding(seq_1.shape[-1], x_forward_1, x_reverse_1)
+        bind_values_2 = self.predict_binding(seq_2.shape[-1], x_forward_2, x_reverse_2)
 
         return bind_values_1, bind_values_2
 
     def integers(self, x, pos):
-        return '%1d'%x
+        return '%1d' % x
 
     def one_decimal(self, y, pos):
-        return '%1.1f'%y
+        return '%1.1f' % y
+
+    def plot_seq_bindings(self, ax, xlim, bindings, legend, xlabel, ylabel, threshold):
+        size = [i * self.model.input_length for i in range(len(bindings))]
+        ax.plot(size, bindings, label=legend)
+        ax.plot(size, [threshold for _ in range(len(bindings))], label='threshold', color=colors['darkred'])
+        ax.legend(fontsize=15)
+        ax.grid()
+        ax.set_ylim(0, 1.01)
+        ax.set_xlim(0, xlim)
+        ax.set_xticklabels(ax.get_xticks(), {'size': 13})
+        ax.set_yticklabels(ax.get_yticks(), {'size': 13})
+        ax.xaxis.set_major_formatter(FuncFormatter(self.integers))
+        ax.yaxis.set_major_formatter(FuncFormatter(self.one_decimal))
+        ax.set_ylabel(ylabel, fontsize=15)
+        if xlabel:
+            ax.set_xlabel(xlabel, fontsize=15)
 
     def plot_bindings(self, threshold, binding_1, binding_2):
         size1 = len(binding_1) * 300
@@ -96,33 +135,10 @@ class CrossTalkEvaluator(object):
 
         figure = plt.figure(figsize=(20, 10))
         ax1 = figure.add_subplot(2, 1, 1)
-        size1 = [i * self.model.input_length for i in range(len(binding_1))]
-        ax1.plot(size1, binding_1, label = 'DNA seq 1')
-        ax1.plot(size1, [threshold for _ in range(len(binding_1))], label='threshold', color=colors['darkred'])
-        ax1.legend(fontsize=15)
-        ax1.grid()
-        ax1.set_ylim(0, 1.01)
-        ax1.set_xlim(0, size)
-        ax1.set_xticklabels(ax1.get_xticks(), {'size': 13})
-        ax1.set_yticklabels(ax1.get_yticks(), {'size': 13})
-        ax1.xaxis.set_major_formatter(FuncFormatter(self.integers))
-        ax1.yaxis.set_major_formatter(FuncFormatter(self.one_decimal))
-        ax1.set_ylabel("Binding values", fontsize=15)
+        self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values", threshold)
 
         ax2 = figure.add_subplot(2, 1, 2)
-        size2 = [i * self.model.input_length for i in range(len(binding_2))]
-        ax2.plot(size2, binding_2, label='DNA seq 2')
-        ax2.plot(size2, [threshold for _ in range(len(binding_2))], label='threshold', color=colors['darkred'])
-        ax2.legend(fontsize=15)
-        ax2.grid()
-        ax2.set_ylim(0, 1.01)
-        ax2.set_xlim(0, size)
-        ax2.set_xticklabels(ax2.get_xticks(), {'size': 13})
-        ax2.set_yticklabels(ax2.get_yticks(), {'size': 13})
-        ax2.xaxis.set_major_formatter(FuncFormatter(self.integers))
-        ax2.yaxis.set_major_formatter(FuncFormatter(self.one_decimal))
-        ax2.set_xlabel("DNA positions", fontsize=15)
-        ax2.set_ylabel("Binding values", fontsize=15)
+        self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
 
-        #plt.title("Binding Values of " + str(self.model_name))
+        figure.suptitle("Transcription Factor: " + str(self.model_name))
         return figure
