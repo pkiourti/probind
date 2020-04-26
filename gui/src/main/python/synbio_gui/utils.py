@@ -256,7 +256,7 @@ def gen_save_rev_seq(fwd_seq_filepath, test=False):
         np.save(os.path.join(project_root, 'data', rev_file_name), reverse)
 
         return rev_file_name
-    
+
     else:
         return reverse
 
