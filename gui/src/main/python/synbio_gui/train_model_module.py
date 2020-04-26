@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 from file_dialog import FileDialog, MultiFileDialog
 import os
+import shutil
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -245,7 +246,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         train_model_btn.clicked.connect(self.input_params.close)
         train_model_btn.clicked.connect(dialog.close)
 
-        train_model_btn.clicked.connect(lambda:self.process_selected_files(inputs=[filepath_dialog.filepath]))
+        train_model_btn.clicked.connect(lambda:self.process_selected_files(inputs=[filepath_dialog.filepath, npy_filepaths_dialog.filepaths]))
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel_btn)
@@ -264,32 +265,45 @@ class TrainModelWidget(QtWidgets.QWidget):
 
     def process_selected_files(self, inputs):
         # check filepath extension
-        file_ext = os.path.splitext(inputs[0])[1]
+        if not inputs[1]: # i.e. npy_filepath_dialogs.filepaths is empty list
+            file_ext = os.path.splitext(inputs[0])[1]
+        else:
+            file_ext = os.path.splitext(inputs[1][0])[1]
+
         if file_ext == ".txt":
             self.x_fwd, self.x_rev, self.y = utils.convert_txt_to_npy(inputs[0])
         elif file_ext == ".csv":
             self.x_fwd, self.x_rev, self.y = utils.convert_csv_to_npy(inputs[0])
-        # elif file_ext == ".npy":
-        #     # if files are already .npy, saves to data folder
-        #     data_path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'data')
-        #
-        #     if not os.path.exists(data_path):
-        #         os.makedirs(data_path)
-        #
-        #     file_names = []
-        #
-        #     for f in npy_filepaths_dialog.filepaths:
-        #         name = os.path.splitext(os.path.basename(os.path.join(f)))[0]
-        #         file_names.append(name)
-        #
-        #         if not os.path.exists(os.path.join(data_path, name + ".npy")):
-        #             os.replace(f, os.path.join(data_path, name + ".npy"))
-        #
-        #     # assumption that there are only 2 .npy files
-        #     # and they are appropriately named x_forward_#.npy, y_#.npy
-        #     self.x_fwd = file_names[0]
-        #     self.x_rev = utils.gen_save_rev_seq(npy_filepaths_dialog.filepaths[0])
-        #     self.y = file_names[1]
+        elif file_ext == ".npy":
+            # if files are already .npy, saves to data folder
+            data_path = os.path.join(utils.project_root, 'data')
+
+            if not os.path.exists(data_path):
+                os.makedirs(data_path)
+
+            file_names = []
+
+            for f in inputs[1]: # inputs[1] = npy_filepath_dialog.filepaths, i.e. a list of filepaths
+                name = os.path.splitext(os.path.basename(f))[0]
+
+                if not os.path.exists(os.path.join(data_path, name + ".npy")): # if the file doesn't already exist in the /data folder, then copy it over
+                    # os.replace(f, os.path.join(data_path, name + ".npy"))
+                    shutil.copy(f, os.path.join(data_path, name + ".npy"))
+                else: # need to give them new names
+                    i = 0
+                    while (os.path.exists(os.path.join(data_path, name + ".npy"))):
+                        name = name + "_" + str(i)
+                        i += 1
+                    # os.replace(f, os.path.join(data_path, name + ".npy"))
+                    shutil.copy(f, os.path.join(data_path, name + ".npy"))
+
+                file_names.append(name)
+
+            # assumption that there are only 2 .npy files
+            # and they are appropriately named x_forward_#.npy, y_#.npy
+            self.x_fwd = file_names[0] + ".npy"
+            self.x_rev = utils.gen_save_rev_seq(inputs[1][0])
+            self.y = file_names[1] + ".npy"
 
         self.train_model_dialog(random_data=False)
 

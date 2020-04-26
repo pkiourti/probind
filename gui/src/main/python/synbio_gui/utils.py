@@ -184,14 +184,22 @@ def convert_csv_to_npy(csv_filepath):
 
 def gen_save_rev_seq(fwd_seq_filepath):
     fwd_seq_file_name = os.path.splitext(os.path.basename(fwd_seq_filepath))[0]
-    fwd_seq = np.load(fwd_seq_filepath)
+    fwd_seqs = np.load(fwd_seq_filepath)
     identity_matrix = np.eye(bases, dtype=int)
-    rev_compl = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq], 0)
+    rev_seqs = []
 
-    name_int = fwd_seq_file_name[fwd_seq_file_name.find('_', 2) + 1:]
-    rev_file_name = 'x_reverse_' + name_int + '.npy'
+    for f in fwd_seqs:  # for each fwd sequence
+        fwd_seq_transpose = np.transpose(f)
+        rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
+        rev = np.transpose(rev)
+        rev_seqs.append(rev)
 
-    np.save(os.path.join(project_root, 'data', rev_file_name), rev_compl)
+    reverse = np.asarray(rev_seqs)
+
+    # name_int = fwd_seq_file_name[fwd_seq_file_name.find('_', 2) + 1:]
+    rev_file_name = fwd_seq_file_name + '_reverse.npy'
+
+    np.save(os.path.join(project_root, 'data', rev_file_name), reverse)
 
     return rev_file_name
 
