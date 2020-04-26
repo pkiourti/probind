@@ -1,11 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import os
-from PyQt5.QtWidgets import (QLabel, QtSlider, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
+from PyQt5.QtWidgets import (QLabel, QSlider, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
 from PyQt5.QtCore import Qt
 from file_dialog import FileDialog
 from utils import get_saved_models
-from cross_talk_evaluator import CrossTalkEvaluator
+from backend.cross_talk_evaluator import CrossTalkEvaluator
 
 class RMW(QtWidgets.QWidget):
 
