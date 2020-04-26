@@ -13,7 +13,7 @@ class ManageModelWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(ManageModelWidget, self).__init__(*args, **kwargs)
-        self.setFixedWidth(250)
+        # self.setFixedWidth(250)
 
         # train model main button
         manage_model_btn = QtWidgets.QPushButton("Manage Models")
@@ -39,6 +39,7 @@ class ManageModelWidget(QtWidgets.QWidget):
 
         file_label = QtWidgets.QLabel("File: ")
         filepath = FileDialog() # select which file to change
+        filepath.directory = os.path.join(filepath.directory, 'models')
         filepath.filter = ""
         file_layout = QtWidgets.QHBoxLayout()
         file_layout.addWidget(file_label)

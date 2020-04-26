@@ -1,8 +1,10 @@
 import numpy as np
 import os
-from generator import Generator
+from backend.generator import Generator
 
 project_root = os.environ.get('PYTHONPATH')
+project_root = project_root.split(os.path.pathsep)[1]
+
 
 def data_files(data_dir_filepath):
     i = 1
@@ -17,7 +19,7 @@ def data_files(data_dir_filepath):
             os.path.join(data_dir_filepath, 'y_' + str(i)))
 
 
-if __name__ == '__main__':
+def create_random_data():
     generator = Generator(300, 1000)
 
     forward, reverse, binding_values = generator.create_random_dataset()
