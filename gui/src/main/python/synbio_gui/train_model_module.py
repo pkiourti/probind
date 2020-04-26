@@ -1,5 +1,5 @@
 from backend.train_wrapper import TrainWrapper
-import thuy_utils
+import utils
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
@@ -128,12 +128,12 @@ class TrainModelWidget(QtWidgets.QWidget):
             new_name = inputs[0]
             self.num_epochs = int(inputs[1])
 
-            name_exists = thuy_utils.check_avail_model_name(inputs[0])
+            name_exists = utils.check_avail_model_name(inputs[0])
 
             i = 1
             while(name_exists == True):
                 new_name = inputs[0] + "_" + str(i)
-                name_exists = thuy_utils.check_avail_model_name(new_name)
+                name_exists = utils.check_avail_model_name(new_name)
 
             self.model_name = new_name
 
@@ -161,7 +161,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         # load_dialog.exec_()
 
         if random_data:
-            self.x_fwd, self.x_rev, self.y = thuy_utils.choose_random_input_data()
+            self.x_fwd, self.x_rev, self.y = utils.choose_random_input_data()
             input_str = "random data"
         else:
             input_str = "selected input data"
@@ -243,9 +243,9 @@ class TrainModelWidget(QtWidgets.QWidget):
         # check filepath extension
         file_ext = os.path.splitext(filepath_dialog.filepath)[1]
         if file_ext == ".txt":
-            self.x_fwd, self.x_rev, self.y = thuy_utils.convert_text_to_numpy(filepath_dialog.filepath)
+            self.x_fwd, self.x_rev, self.y = utils.convert_text_to_numpy(filepath_dialog.filepath)
         elif file_ext == ".csv":
-            self.x_fwd, self.x_rev, self.y = thuy_utils.convert_csv_to_numpy(filepath_dialog.filepath)
+            self.x_fwd, self.x_rev, self.y = utils.convert_csv_to_numpy(filepath_dialog.filepath)
         else:
             # if files are already .npy, saves to data folder
             data_path = os.path.join(os.getcwd(), 'src', 'main', 'python', 'synbio_gui', 'data')
@@ -265,7 +265,7 @@ class TrainModelWidget(QtWidgets.QWidget):
             # assumption that there are only 2 .npy files
             # and they are appropriately named x_forward_#.npy, y_#.npy
             self.x_fwd = file_names[0]
-            self.x_rev = thuy_utils.gen_save_rev_seq(npy_filepaths_dialog.filepaths[0])
+            self.x_rev = utils.gen_save_rev_seq(npy_filepaths_dialog.filepaths[0])
             self.y = file_names[1]
 
         train_model_btn.clicked.connect(lambda:self.train_model_dialog(random_data=False))
