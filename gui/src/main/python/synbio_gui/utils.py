@@ -93,98 +93,149 @@ def convert_dna_seq_to_matrix(dna_seq):
 
 # saves data from .txt file to .npy file in /data
 # appropriate shape is # samples x 4 x 300 ?
-def convert_txt_to_npy(txt_filepath):
+def convert_txt_to_npy(txt_filepath, test=False):
     forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
 
     file = open(txt_filepath, "r")
 
     dna_seq = []
-    binding_vals = []
 
-    i = 1
-    for line in file:
-        if (i % 2 == 0):  # i.e. every 2nd row contains the binding values
-            binding_vals.append(float(line.rstrip()))
-        else:
+    if not test:
+        binding_vals = []
+
+        i = 1
+        for line in file:
+            if (i % 2 == 0):  # i.e. every 2nd row contains the binding values
+                binding_vals.append(float(line.rstrip()))
+            else:
+                one_dna_seq = [switch(j.rstrip()) for j in line.split(' ')]
+                seq_matrix = convert_dna_seq_to_matrix(one_dna_seq)
+                dna_seq.append(seq_matrix)
+
+            i = i + 1
+
+        # convert DNA seq to matrix of 0s and 1s
+        identity_matrix = np.eye(bases, dtype=int)
+        forward = np.asarray(dna_seq)
+
+        rev_seqs = []
+
+        for fwd_seq in forward:  # for each fwd sequence
+            fwd_seq_transpose = np.transpose(fwd_seq)
+            rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
+            rev = np.transpose(rev)
+            rev_seqs.append(rev)
+
+        reverse = np.asarray(rev_seqs)
+        binding_value = np.asarray(binding_vals)
+
+        np.save(forward_file + '.npy', forward)
+        np.save(reverse_file + '.npy', reverse)
+        np.save(bind_v_file + '.npy', binding_value)
+
+        x_fwd = os.path.splitext(os.path.basename(forward_file + '.npy'))[0] + '.npy'
+        x_rev = os.path.splitext(os.path.basename(reverse_file + '.npy'))[0] + '.npy'
+        y = os.path.splitext(os.path.basename(bind_v_file + '.npy'))[0] + '.npy'
+
+        return x_fwd, x_rev, y
+
+    else: # not save (for evaluating test DNA sequences); should return the .npy arrays
+        i = 1
+        for line in file:
             one_dna_seq = [switch(j.rstrip()) for j in line.split(' ')]
             seq_matrix = convert_dna_seq_to_matrix(one_dna_seq)
             dna_seq.append(seq_matrix)
+            i = i + 1
 
-        i = i + 1
+        # convert DNA seq to matrix of 0s and 1s
+        identity_matrix = np.eye(bases, dtype=int)
+        forward = np.asarray(dna_seq)
 
-    # convert DNA seq to matrix of 0s and 1s
-    identity_matrix = np.eye(bases, dtype=int)
-    forward = np.asarray(dna_seq)
+        rev_seqs = []
 
-    rev_seqs = []
+        for fwd_seq in forward:  # for each fwd sequence
+            fwd_seq_transpose = np.transpose(fwd_seq)
+            rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
+            rev = np.transpose(rev)
+            rev_seqs.append(rev)
 
-    for fwd_seq in forward:  # for each fwd sequence
-        fwd_seq_transpose = np.transpose(fwd_seq)
-        rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
-        rev = np.transpose(rev)
-        rev_seqs.append(rev)
+        reverse = np.asarray(rev_seqs)
 
-    reverse = np.asarray(rev_seqs)
-    binding_value = np.asarray(binding_vals)
-
-    np.save(forward_file + '.npy', forward)
-    np.save(reverse_file + '.npy', reverse)
-    np.save(bind_v_file + '.npy', binding_value)
-
-    x_fwd = os.path.splitext(os.path.basename(forward_file + '.npy'))[0] + '.npy'
-    x_rev = os.path.splitext(os.path.basename(reverse_file + '.npy'))[0] + '.npy'
-    y = os.path.splitext(os.path.basename(bind_v_file + '.npy'))[0] + '.npy'
-
-    return x_fwd, x_rev, y
+        return forward, reverse, None
 
 
-def convert_csv_to_npy(csv_filepath):
+def convert_csv_to_npy(csv_filepath, test=False):
     forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
 
     file = open(csv_filepath, "r")
 
     dna_seq = []
-    binding_vals = []
 
-    i = 1
-    for line in file:
-        if (i % 2 == 0):  # i.e. every 2nd row contains the binding values
-            binding_vals.append(float(line.rstrip()))
-        else:
+    if not test:
+        binding_vals = []
+
+        i = 1
+        for line in file:
+            if (i % 2 == 0):  # i.e. every 2nd row contains the binding values
+                binding_vals.append(float(line.rstrip()))
+            else:
+                one_dna_seq = [switch(i.rstrip()) for i in line.split(',')]
+                seq_matrix = convert_dna_seq_to_matrix(one_dna_seq)
+                dna_seq.append(seq_matrix)
+
+            i = i + 1
+
+        # convert DNA seq to matrix of 0s and 1s
+        identity_matrix = np.eye(bases, dtype=int)
+        forward = np.asarray(dna_seq)
+
+        rev_seqs = []
+
+        for fwd_seq in forward:  # for each fwd sequence
+            fwd_seq_transpose = np.transpose(fwd_seq)
+            rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
+            rev = np.transpose(rev)
+            rev_seqs.append(rev)
+
+        reverse = np.asarray(rev_seqs)
+
+        binding_value = np.asarray(binding_vals)
+
+        np.save(forward_file + '.npy', forward)
+        np.save(reverse_file + '.npy', reverse)
+        np.save(bind_v_file + '.npy', binding_value)
+
+        x_fwd = os.path.splitext(os.path.basename(forward_file + '.npy'))[0] + '.npy'
+        x_rev = os.path.splitext(os.path.basename(reverse_file + '.npy'))[0] + '.npy'
+        y = os.path.splitext(os.path.basename(bind_v_file + '.npy'))[0] + '.npy'
+
+        return x_fwd, x_rev, y
+
+    else:
+        i = 1
+        for line in file:
             one_dna_seq = [switch(i.rstrip()) for i in line.split(',')]
             seq_matrix = convert_dna_seq_to_matrix(one_dna_seq)
             dna_seq.append(seq_matrix)
+            i = i + 1
 
-        i = i + 1
+        # convert DNA seq to matrix of 0s and 1s
+        identity_matrix = np.eye(bases, dtype=int)
+        forward = np.asarray(dna_seq)
 
-    # convert DNA seq to matrix of 0s and 1s
-    identity_matrix = np.eye(bases, dtype=int)
-    forward = np.asarray(dna_seq)
+        rev_seqs = []
 
-    rev_seqs = []
+        for fwd_seq in forward:  # for each fwd sequence
+            fwd_seq_transpose = np.transpose(fwd_seq)
+            rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
+            rev = np.transpose(rev)
+            rev_seqs.append(rev)
 
-    for fwd_seq in forward:  # for each fwd sequence
-        fwd_seq_transpose = np.transpose(fwd_seq)
-        rev = np.flip([identity_matrix[complement_base(np.argmax(i))].tolist() for i in fwd_seq_transpose], 0)
-        rev = np.transpose(rev)
-        rev_seqs.append(rev)
+        reverse = np.asarray(rev_seqs)
 
-    reverse = np.asarray(rev_seqs)
+        return forward, reverse, None
 
-    binding_value = np.asarray(binding_vals)
-
-    np.save(forward_file + '.npy', forward)
-    np.save(reverse_file + '.npy', reverse)
-    np.save(bind_v_file + '.npy', binding_value)
-
-    x_fwd = os.path.splitext(os.path.basename(forward_file + '.npy'))[0] + '.npy'
-    x_rev = os.path.splitext(os.path.basename(reverse_file + '.npy'))[0] + '.npy'
-    y = os.path.splitext(os.path.basename(bind_v_file + '.npy'))[0] + '.npy'
-
-    return x_fwd, x_rev, y
-
-
-def gen_save_rev_seq(fwd_seq_filepath):
+def gen_save_rev_seq(fwd_seq_filepath, test=False):
     fwd_seq_file_name = os.path.splitext(os.path.basename(fwd_seq_filepath))[0]
     fwd_seqs = np.load(fwd_seq_filepath)
     identity_matrix = np.eye(bases, dtype=int)
@@ -198,12 +249,16 @@ def gen_save_rev_seq(fwd_seq_filepath):
 
     reverse = np.asarray(rev_seqs)
 
-    # name_int = fwd_seq_file_name[fwd_seq_file_name.find('_', 2) + 1:]
-    rev_file_name = fwd_seq_file_name + '_reverse.npy'
+    if not test:
+        # name_int = fwd_seq_file_name[fwd_seq_file_name.find('_', 2) + 1:]
+        rev_file_name = fwd_seq_file_name + '_reverse.npy'
 
-    np.save(os.path.join(project_root, 'data', rev_file_name), reverse)
+        np.save(os.path.join(project_root, 'data', rev_file_name), reverse)
 
-    return rev_file_name
+        return rev_file_name
+
+    else:
+        return reverse
 
 
 def choose_random_input_data():
