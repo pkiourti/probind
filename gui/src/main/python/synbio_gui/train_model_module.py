@@ -61,7 +61,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         layout.addWidget(train_model_btn)
         self.setLayout(layout)
 
-        sys.stdout = Stream(newText=self.on_update_text)
+        # sys.stdout = Stream(newText=self.on_update_text)
 
     def input_train_params(self, use_random_data=True):
         self.input_params = QtWidgets.QDialog(self)
@@ -155,13 +155,12 @@ class TrainModelWidget(QtWidgets.QWidget):
                 self.x_rev = load_data_dialog.x_rev
                 self.y = load_data_dialog.y
                 self.train_model_dialog(random_data=False)
-
-    def on_update_text(self, text):
-        cursor = self.console_output.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
-        cursor.insertText(text)
-        self.console_output.setTextCursor(cursor)
-        self.console_output.ensureCursorVisible()
+    #
+    # def on_update_text(self):
+    #     cursor = self.console_output.textCursor()
+    #     cursor.movePosition(QtGui.QTextCursor.End)
+    #     self.console_output.setTextCursor(cursor)
+    #     self.console_output.ensureCursorVisible()
 
     def train_model_dialog(self, random_data=True):
         if random_data:
@@ -194,8 +193,8 @@ class TrainModelWidget(QtWidgets.QWidget):
 
         # get progress messages from worker:
         worker.sig_done.connect(lambda:self.plot_loss_figure(worker.train_wrapper.get_figure()))
-        # worker.sig_done.connect(thread.quit())
-        worker.sig_msg.connect(lambda:self.update_output_log(worker.text))
+        worker.sig_done.connect(thread.quit)
+        worker.sig_msg.connect(lambda: self.update_output_log(worker.text))
 
         thread.started.connect(worker.work)
         thread.start()
@@ -205,6 +204,7 @@ class TrainModelWidget(QtWidgets.QWidget):
 
     def update_output_log(self, new_text):
         self.console_output.setText(new_text)
+        self.console_output.moveCursor(QtGui.QTextCursor.End)
 
     def plot_loss_figure(self, figure):
         dialog = QtWidgets.QDialog()
