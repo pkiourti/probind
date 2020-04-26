@@ -22,10 +22,13 @@ base_idx_mapping = {'A': 0, 'T': 1, 'C': 2, 'G': 3}
 
 class CrossTalkEvaluator(object):
 
-    def __init__(self, model_name):
-        self.model_name = model_name
-        self.model = self.load_model(model_name)
-        self.dev = "cuda:0" if torch.cuda.is_available else "cpu"
+    def __init__(self):
+        self.dev = "cpu"
+        self.model = ""
+        self.model_name = ""
+        self.figure = ""
+        self.line1 = ""
+        self.line2 = ""
 
     def compute_reverse_complements(self, seq_1, seq_2):
         identity_matrix = np.eye(4, dtype=int)
@@ -38,17 +41,15 @@ class CrossTalkEvaluator(object):
 
         return np.transpose(reverse_1), np.transpose(reverse_2)
 
-    @staticmethod
-    def load_model(model_name):
-        dev = "cuda:0" if torch.cuda.is_available() else "cpu"
-        cnn = CNN()
+    def load_model(self, model_name):
+        self.model = CNN()
 
-        device = torch.device(dev)
-        cnn.to(device)
-        cnn.load_state_dict(torch.load(os.path.join(project_root, 'models', model_name)))
-        cnn.eval()
+        device = torch.device(self.dev)
+        self.model.to(device)
+        self.model.load_state_dict(torch.load(os.path.join(project_root, 'models', model_name)))
+        self.model.eval()
 
-        return cnn
+        self.model_name = model_name
 
     @staticmethod
     def complement_base(idx):
@@ -112,7 +113,7 @@ class CrossTalkEvaluator(object):
     def plot_seq_bindings(self, ax, xlim, bindings, legend, xlabel, ylabel, threshold):
         size = [i * self.model.input_length for i in range(len(bindings))]
         ax.plot(size, bindings, label=legend)
-        ax.plot(size, [threshold for _ in range(len(bindings))], label='threshold', color=colors['darkred'])
+        line, _ = ax.plot(size, [threshold for _ in range(len(bindings))], label='threshold', color=colors['darkred'])
         ax.legend(fontsize=15)
         ax.grid()
         ax.set_ylim(0, 1.01)
@@ -125,6 +126,8 @@ class CrossTalkEvaluator(object):
         if xlabel:
             ax.set_xlabel(xlabel, fontsize=15)
 
+        return line
+
     def plot_bindings(self, threshold, binding_1, binding_2):
         size1 = len(binding_1) * 300
         size2 = len(binding_2) * 300
@@ -133,12 +136,13 @@ class CrossTalkEvaluator(object):
 
         size = 1.01 * size
 
-        figure = plt.figure(figsize=(20, 10))
+        self.figure = plt.figure(figsize=(20, 10))
         ax1 = figure.add_subplot(2, 1, 1)
-        self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values", threshold)
+        self.line1 = self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values", threshold)
 
         ax2 = figure.add_subplot(2, 1, 2)
-        self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
+        self.line2 = self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
 
-        figure.suptitle("Cross Talk for Transcription Factor: " + str(self.model_name), fontsize=25)
-        return figure
+        self.figure.suptitle("Cross Talk for Transcription Factor: " + str(self.model_name), fontsize=25)
+        return self.figure
+
