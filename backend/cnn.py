@@ -8,6 +8,7 @@ class CNN(nn.Module):
 
     def __init__(self, input_channels=1, filters=16, kernel=(4, 24), stride=1):
         super().__init__()
+        self.input_length = 300
         self.conv1 = nn.Conv2d(input_channels, filters, kernel, stride)
         self.batchNorm = nn.BatchNorm1d(num_features=64)
         self.linear1 = nn.Linear(64, 128)

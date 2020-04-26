@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 
 class Generator(object):
@@ -38,3 +39,6 @@ class Generator(object):
         binding_values = np.asarray([self.create_random_bind_value() for _ in range(self.num)])
 
         return forward, reverse, binding_values
+
+    def create_dna_string(self):
+        return ''.join([random.choice('ATCG') for _ in range(self.length)])
