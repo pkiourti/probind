@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from file_dialog import FileDialog, MultiFileDialog
 import os
 import shutil
+import numpy as np
 
 
 class DataLoaderWidget(QtWidgets.QDialog):
@@ -76,7 +77,7 @@ class DataLoaderWidget(QtWidgets.QDialog):
 
         self.exec_()
 
-    def process_selected_files(self, inputs):
+    def process_selected_files(self, inputs, test=False):
         # check filepath extension
         if not inputs[1]: # i.e. npy_filepath_dialogs.filepaths is empty list
             file_ext = os.path.splitext(inputs[0])[1]
@@ -84,37 +85,43 @@ class DataLoaderWidget(QtWidgets.QDialog):
             file_ext = os.path.splitext(inputs[1][0])[1]
 
         if file_ext == ".txt":
-            self.x_fwd, self.x_rev, self.y = utils.convert_txt_to_npy(inputs[0])
+            self.x_fwd, self.x_rev, self.y = utils.convert_txt_to_npy(inputs[0], test)
         elif file_ext == ".csv":
-            self.x_fwd, self.x_rev, self.y = utils.convert_csv_to_npy(inputs[0])
+            self.x_fwd, self.x_rev, self.y = utils.convert_csv_to_npy(inputs[0], test)
         elif file_ext == ".npy":
-            # if files are already .npy, saves to data folder
-            data_path = os.path.join(utils.project_root, 'data')
+            if not test:
+                # if files are already .npy, saves to data folder
+                data_path = os.path.join(utils.project_root, 'data')
 
-            if not os.path.exists(data_path):
-                os.makedirs(data_path)
+                if not os.path.exists(data_path):
+                    os.makedirs(data_path)
 
-            file_names = []
+                file_names = []
 
-            for f in inputs[1]: # inputs[1] = npy_filepath_dialog.filepaths, i.e. a list of filepaths
-                name = os.path.splitext(os.path.basename(f))[0]
+                for f in inputs[1]: # inputs[1] = npy_filepath_dialog.filepaths, i.e. a list of filepaths
+                    name = os.path.splitext(os.path.basename(f))[0]
 
-                if not os.path.exists(os.path.join(data_path, name + ".npy")): # if the file doesn't already exist in the /data folder, then copy it over
-                    # os.replace(f, os.path.join(data_path, name + ".npy"))
-                    shutil.copy(f, os.path.join(data_path, name + ".npy"))
-                else: # need to give them new names
-                    i = 0
-                    while (os.path.exists(os.path.join(data_path, name + ".npy"))):
-                        name = name + "_" + str(i)
-                        i += 1
-                    # os.replace(f, os.path.join(data_path, name + ".npy"))
-                    shutil.copy(f, os.path.join(data_path, name + ".npy"))
+                    if not os.path.exists(os.path.join(data_path, name + ".npy")): # if the file doesn't already exist in the /data folder, then copy it over
+                        # os.replace(f, os.path.join(data_path, name + ".npy"))
+                        shutil.copy(f, os.path.join(data_path, name + ".npy"))
+                    else: # need to give them new names
+                        i = 0
+                        while (os.path.exists(os.path.join(data_path, name + ".npy"))):
+                            name = name + "_" + str(i)
+                            i += 1
+                        # os.replace(f, os.path.join(data_path, name + ".npy"))
+                        shutil.copy(f, os.path.join(data_path, name + ".npy"))
 
-                file_names.append(name)
+                    file_names.append(name)
 
-            # assumption that there are only 2 .npy files
-            # and they are appropriately named x_forward_#.npy, y_#.npy
-            self.x_fwd = file_names[0] + ".npy"
-            self.x_rev = utils.gen_save_rev_seq(inputs[1][0])
-            self.y = file_names[1] + ".npy"
+                # assumption that there are only 2 .npy files
+                # and they are appropriately named x_forward_#.npy, y_#.npy
+                self.x_fwd = file_names[0] + ".npy"
+                self.x_rev = utils.gen_save_rev_seq(inputs[1][0])
+                self.y = file_names[1] + ".npy"
+
+            else: # testing, do not save .npy files to data folder, just load the .npy arrays
+                self.x_fwd = np.load(inputs[1][0])
+                self.x_rev = utils.gen_save_rev_seq(inputs[1][0], test=True)
+                self.y = np.load(inputs[1][1])
 
