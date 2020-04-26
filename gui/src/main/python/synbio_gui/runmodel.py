@@ -139,20 +139,22 @@ class RMW(QtWidgets.QWidget):
             self.ok.setEnabled(True)
 
     def uploaddata(self):
-        dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle("Evaluation Parameters")
         up_data = self.sender()
         if up_data.isChecked():
 
             filepath = DataLoaderWidget(True, "Run")
 
-            self.bind1, self.bind2 = self.cross_talk_evaluator.run(filepath.x_fwd,
+            if (filepath.x_fwd.shape[-1] <= 300 or filepath.y.shape[-1] <= 300):
+                alert = QtWidgets.QMessageBox()
+                alert.setText("DNA sequences must have more than 300 bases")
+                alert.setWindowTitle("Invalid DNA inputs")
+                alert.setIcon(QtWidgets.QMessageBox.Warning)
+                alert.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                alert.exec_()
+            else:
+                self.bind1, self.bind2 = self.cross_talk_evaluator.run(filepath.x_fwd,
                                                                    filepath.y)
-
-            layout = QtWidgets.QVBoxLayout()
-            layout.addWidget(filepath)
-            dialog.setLayout(layout)
-            dialog.exec_()
+                self.threshold_change()
 
     def initial_draw(self):
         size1 = len(self.bind1) * 300
