@@ -226,7 +226,7 @@ class TrainModelWidget(QtWidgets.QWidget):
         # filepath widget
         filepath_dialog = FileDialog()
         filepath_dialog.directory = os.path.join(filepath_dialog.directory, 'data')
-        filepath_dialog.filter = "Text files (*.txt);; CSV files (*.csv)"
+        filepath_dialog.filter = "Text, CSV files (*.txt; *.csv);; Text files (*.txt);; CSV files (*.csv)"
         npy_filepaths_dialog = MultiFileDialog()
         npy_filepaths_dialog.directory = os.path.join(npy_filepaths_dialog.directory, 'data')
         npy_filepaths_dialog.filter = "Numpy files (*.npy)"

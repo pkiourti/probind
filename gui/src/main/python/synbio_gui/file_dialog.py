@@ -20,7 +20,8 @@ class FileDialog(QtWidgets.QWidget):
         self.filepath_input.setPlaceholderText("default filepath")
         self.filepath = ""
         self.directory = project_root
-        self.filter = "Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
+        self.filter = "Text, CSV, or Numpy files (*.txt; *.csv; *.npy);; \
+                    Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
 
         # folder icon
         self.folder_btn = QtWidgets.QPushButton()
@@ -59,7 +60,8 @@ class MultiFileDialog(QtWidgets.QWidget):
         self.filepaths_input.setDisabled(True)
         self.filepaths = []
         self.directory = project_root
-        self.filter = "Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
+        self.filter = "Text, CSV, or Numpy files (*.txt; *.csv; *.npy);; \
+                    Text files (*.txt);; CSV files (*.csv);; Numpy files (*.npy)"
 
         # folder icon
         self.folder_btn = QtWidgets.QPushButton()
