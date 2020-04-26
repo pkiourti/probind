@@ -11,7 +11,11 @@ from backend.cnn import CNN
 TRAIN_SPLIT = 0.8
 
 project_root = os.environ.get('PYTHONPATH')
-project_root = project_root.split(os.path.pathsep)[1]
+try:
+    project_root = project_root.split(os.path.pathsep)[1]
+except Exception as e:
+    pass
+
 
 class TrainWrapper(object):
 
@@ -24,30 +28,45 @@ class TrainWrapper(object):
 
         self.path = project_root
         self.seed = 42
+        torch.manual_seed(self.seed)
         self.model_name = model_name
         self.trained = False
 
-    def load_model(self, dev):
+        self.train_losses = []
+        self.test_losses = []
+
+        self.dev = "cuda:0" if torch.cuda.is_available() else "cpu"
+        self.model, self.optimizer = self.define_model()
+        self.train_loader, self.test_loader = self.load_data(self.path,
+                                                             self.name_x_forward,
+                                                             self.name_x_reverse,
+                                                             self.name_y)
+
+        self.batch_idx = 0
+        self.iterator = iter(self.train_loader)
+
+    def define_model(self):
         cnn = CNN()
 
-        device = torch.device(dev)
+        device = torch.device(self.dev)
         cnn.to(device)
         cnn.train()
         optim = torch.optim.SGD(cnn.parameters(), lr=1e-3, weight_decay=0.01)
 
         return cnn, optim
 
-    def load_data(self, path, name_x_forward, name_x_reverse, name_y, dev):
+    def load_data(self, path, name_x_forward, name_x_reverse, name_y):
         dna_seqs_for = np.load(os.path.join(path, 'data', name_x_forward))
         dna_seqs_rev = np.load(os.path.join(path, 'data', name_x_reverse))
         dna_binding_values = np.load(os.path.join(path, 'data', name_y))
 
-        x_tensors_for = torch.FloatTensor(dna_seqs_for).unsqueeze(1).to(dev)
-        x_tensors_rev = torch.FloatTensor(dna_seqs_rev).unsqueeze(1).to(dev)
-        y_tensors = torch.FloatTensor(dna_binding_values).unsqueeze(1).to(dev)
+        x_tensors_for = torch.FloatTensor(dna_seqs_for).unsqueeze(1).to(self.dev)
+        x_tensors_rev = torch.FloatTensor(dna_seqs_rev).unsqueeze(1).to(self.dev)
+        y_tensors = torch.FloatTensor(dna_binding_values).unsqueeze(1).to(self.dev)
 
         dataset = TensorDataset(x_tensors_for, x_tensors_rev, y_tensors)
         train_length = int(TRAIN_SPLIT * x_tensors_for.shape[0])
+        print(train_length)
         test_length = x_tensors_for.shape[0] - train_length
 
         train_dataset, test_dataset = random_split(dataset, [train_length, test_length])
@@ -57,7 +76,7 @@ class TrainWrapper(object):
 
         return train_loader, test_loader
 
-    def save_model(self, model):
+    def save_model(self):
         models_path = os.path.join(self.path, 'models')
         if not os.path.exists(models_path):
             os.makedirs(models_path)
@@ -67,63 +86,100 @@ class TrainWrapper(object):
             i = 1
             while os.path.exists(filename + '_' + str(i)):
                 i += 1
-            torch.save(model.state_dict(), filename + '_' + str(i))
+            torch.save(self.model.state_dict(), filename + '_' + str(i))
             print(f'Model saved at {filename}_{str(i)}')
         else:
-            torch.save(model.state_dict(), filename)
+            torch.save(self.model.state_dict(), filename)
             print(f'Model saved at {filename}')
 
+    def get_num_batches(self):
+        return len(self.train_loader)
+
+    def set_batch_idx(self, value):
+        self.batch_idx = value
+
+    def get_batch_idx(self):
+        return self.batch_idx
+
+    def one_step_train(self, epoch):
+        X_train_forward, X_train_reverse, y_train = self.iterator.next()
+        pred = self.model(X_train_forward, X_train_reverse)
+        loss = self.model.loss(pred, y_train)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        self.set_batch_idx(self.get_batch_idx() + 1)
+
+        if self.get_batch_idx() == self.get_num_batches():
+            self.train_losses.append(loss.item())
+
+        print(f'Epoch {epoch} batch {self.get_batch_idx()} loss: {loss.item()}')
+
+    def test(self):
+        with torch.no_grad():
+            for X_test_forward, X_test_reverse, y_test in self.test_loader:
+                pred = self.model(X_test_forward, X_test_reverse)
+
+        loss = self.model.loss(pred, y_test)
+        self.test_losses.extend([loss.item()])
+
+    def reset(self):
+        self.iterator = iter(self.train_loader)
+        self.set_batch_idx(0)
+
+    # this should be called from the UI in the exact same way
+    def run(self):
+        start_time = time.time()
+        batches = self.get_num_batches()
+        for epoch in range(self.epochs):
+            while self.get_batch_idx() < batches:
+                self.one_step_train(epoch)
+            self.test()
+            self.reset()
+
+        total_time = time.time() - start_time
+        print(f'Total training time: {total_time / 60} mins')
+        self.save_model()
+        return self.get_figure()
+
     def train(self):
-        dev = "cuda:0" if torch.cuda.is_available() else "cpu"
-        model, optimizer = self.load_model(dev)
-        model = model.float()
-        torch.manual_seed(self.seed)
-
-        train_loader, test_loader = self.load_data(self.path,
-                                                   self.name_x_forward,
-                                                   self.name_x_reverse,
-                                                   self.name_y, dev)
-
-        # TRACKERS
-        train_losses = []
-        test_losses = []
-
         start_time = time.time()
 
         for epoch in range(self.epochs):
-            for batch_idx, (X_train_forward, X_train_reverse, y_train) in enumerate(train_loader):
+            for batch_idx, (X_train_forward, X_train_reverse, y_train) in enumerate(self.train_loader):
                 batch_idx += 1
-                pred = model(X_train_forward, X_train_reverse)
-                loss = model.loss(pred, y_train)
-                optimizer.zero_grad()
+                pred = self.model(X_train_forward, X_train_reverse)
+                loss = self.model.loss(pred, y_train)
+                self.optimizer.zero_grad()
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 print(f'Epoch {epoch} batch {batch_idx} loss: {loss.item()}')
 
-            train_losses.append(loss.item())
+            self.train_losses.append(loss.item())
 
             # TEST
             with torch.no_grad():
-                for X_test_forward, X_test_reverse, y_test in test_loader:
-                    pred = model(X_test_forward, X_test_reverse)
+                for X_test_forward, X_test_reverse, y_test in self.test_loader:
+                    pred = self.model(X_test_forward, X_test_reverse)
 
-            loss = model.loss(pred, y_test)
-            test_losses.extend([loss.item()])
+            loss = self.model.loss(pred, y_test)
+            self.test_losses.extend([loss.item()])
 
         total_time = time.time() - start_time
         print(f'Total training time: {total_time / 60} mins')
 
-        self.save_model(model)
-        figure = self.get_figure(train_losses, test_losses)
+        self.save_model()
+        figure = self.get_figure()
 
         return figure
 
-    def get_figure(self, train_losses, test_losses):
+    def get_figure(self):
         figure = plt.figure()
         ax = figure.add_subplot()
-        ax.plot([i for i in range(self.epochs)], train_losses, label='train')
-        ax.plot([i for i in range(self.epochs)], test_losses, label='test')
+        ax.plot([i for i in range(self.epochs)], self.train_losses, label='train')
+        ax.plot([i for i in range(self.epochs)], self.test_losses, label='test')
         ax.legend()
         plt.title("Loss throughout training epochs")
         plt.xlabel("epoch")
