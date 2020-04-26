@@ -140,5 +140,5 @@ class CrossTalkEvaluator(object):
         ax2 = figure.add_subplot(2, 1, 2)
         self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
 
-        figure.suptitle("Transcription Factor: " + str(self.model_name))
+        figure.suptitle("Cross Talk for Transcription Factor: " + str(self.model_name), fontsize=25)
         return figure

@@ -31,8 +31,11 @@ class CNN(nn.Module):
         X = self.linear1(X)
         X = self.dropout(X)
         X = self.linear2(X)
-        return self.output(X)
+
+        binding_value = self.output(X)
+
+        return torch.exp(binding_value)
 
     def loss(self, pred, actual):
-        criterion = MSELoss()
-        return criterion(pred, actual)
+        mse_loss = MSELoss()
+        return mse_loss(pred, actual)

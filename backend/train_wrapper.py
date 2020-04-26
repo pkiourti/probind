@@ -5,6 +5,11 @@ import time
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib import colors as mcolors
+
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+plt.style.use('seaborn-dark')
 
 from backend.cnn import CNN
 
@@ -66,7 +71,6 @@ class TrainWrapper(object):
 
         dataset = TensorDataset(x_tensors_for, x_tensors_rev, y_tensors)
         train_length = int(TRAIN_SPLIT * x_tensors_for.shape[0])
-        print(train_length)
         test_length = x_tensors_for.shape[0] - train_length
 
         train_dataset, test_dataset = random_split(dataset, [train_length, test_length])
@@ -181,8 +185,9 @@ class TrainWrapper(object):
         ax.plot([i for i in range(self.epochs)], self.train_losses, label='train')
         ax.plot([i for i in range(self.epochs)], self.test_losses, label='test')
         ax.legend()
-        plt.title("Loss throughout training epochs")
-        plt.xlabel("epoch")
+        ax.grid()
+        plt.title(f"Learning {self.model_name} behavior")#Loss throughout training epochs")
+        plt.xlabel("Training epoch")
         plt.ylabel("Loss")
 
         return figure
