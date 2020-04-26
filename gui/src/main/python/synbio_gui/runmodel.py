@@ -1,10 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
-from PyQt5.QtWidgets import (QLabel, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
-#from cross_talk_evaluator import CrossTalkEvaluator
-from utils import get_saved_models
 import os
+from PyQt5.QtWidgets import (QLabel, QtSlider, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
+from PyQt5.QtCore import Qt
 from file_dialog import FileDialog
+from utils import get_saved_models
+from cross_talk_evaluator import CrossTalkEvaluator
 
 class RMW(QtWidgets.QWidget):
 
@@ -16,15 +17,52 @@ class RMW(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(rm_button)
         self.setLayout(layout)
-        rm_button.clicked.connect(self.evalparam)
+
+        path = '../../../../../models'
+
+        if os.path.exists(path):
+            rm_button.clicked.connect(self.evalparam)
+        else:
+            rm_button.clicked.connect(self.nomodel)
+
+    def nomodel(self):
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Error")
+        error = QtWidgets.QLabel("There are currently no models.")
+        ok = QtWidgets.QPushButton("OK")
+        ok.clicked.connect(dialog.close)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(error)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
 
     def run_model(self): # output graph
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Output graph")
 
+        slider = QSlider(Qt.Vertical)
+        slider.setMinimum(0)
+        slider.setMaximum(1)
+        slider.setTickPosition(QSlider.TicksBelow)
+        slider.setSingleStep(1)
+        slider.setTickInterval(0.1)
+     #   slider.valueChanged[int].connect(self.threshold)
 
+        # cross_talk_eval = CrossTalkEvaluator('name of the model')
+        #
+        # # seq1, seq2 can be either strings or numpy arrays (I accept both and have tested it)
+        # bind_values_1, bind_values_2 = cross_talk_eval.run(seq1,seq2)
+        # figure = plot_bindings(threshold, bind_values_1, bind_values_2)
 
+        layout = QVBoxLayout()
+        label = QLabel("Threshold")
+        layout.addWidget(label)
+        layout.addWidget(slider)
+        dialog.setLayout(layout)
         dialog.exec_()
+
+    #def threshold(self,value): # for graphs
 
     def evalparam(self):
         dialog = QtWidgets.QDialog(self)
@@ -32,7 +70,7 @@ class RMW(QtWidgets.QWidget):
 
         label1 = QtWidgets.QLabel("Choose Model")
         combo = QComboBox(self)
-        # items in combo box will be from train model/manage model
+        combo.addItems(get_saved_models())
 
         label2 = QtWidgets.QLabel("Input sequences")
 
@@ -51,8 +89,8 @@ class RMW(QtWidgets.QWidget):
 
         cancel = QtWidgets.QPushButton("Cancel")
         cancel.clicked.connect(dialog.close)
-        ok = QtWidgets.QPushButton("OK") #ok --> disable if no model
-        ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs?
+        ok = QtWidgets.QPushButton("OK")
+        ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs -- textbox has nothing then display error
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel)
@@ -90,7 +128,7 @@ class RMW(QtWidgets.QWidget):
             cancel = QtWidgets.QPushButton("Cancel")
             cancel.clicked.connect(dialog.close)
             ok = QtWidgets.QPushButton("OK")
-            ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs? -- disable if no model
+            ok.clicked.connect(lambda: self.run_model())
 
             button_layout = QtWidgets.QHBoxLayout()
             button_layout.addWidget(cancel)
