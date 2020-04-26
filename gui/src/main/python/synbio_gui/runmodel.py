@@ -7,6 +7,7 @@ from file_dialog import FileDialog, MultiFileDialog
 from utils import get_saved_models
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from backend.cross_talk_evaluator import CrossTalkEvaluator
+from data_loader import DataLoaderWidget
 
 project_root = os.environ.get('PYTHONPATH')
 try:
@@ -27,6 +28,9 @@ class RMW(QtWidgets.QWidget):
         self.setLayout(layout)
 
         self.path = project_root
+        self.currentmodel = ""
+        self.dna1 = ""
+        self.dna2 = ""
 
         if os.path.exists(os.path.join(self.path, 'models')):
             rm_button.clicked.connect(self.evalparam)
@@ -44,37 +48,6 @@ class RMW(QtWidgets.QWidget):
         dialog.setLayout(layout)
         dialog.exec_()
 
-
-    def run_model(self): # output graph
-        dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle("Output graph")
-
-        slider = QSlider(Qt.Vertical)
-        slider.setMinimum(0)
-        slider.setMaximum(1)
-        slider.setTickPosition(QSlider.TicksBelow)
-        slider.setSingleStep(1)
-        slider.setTickInterval(0.1)
-     #   slider.valueChanged[int].connect(self.threshold)
-
-        cross_talk_eval = CrossTalkEvaluator('name of the model')
-
-        # seq1, seq2 can be either strings or numpy arrays (I accept both and have tested it)
-        bind_values_1, bind_values_2 = cross_talk_eval.run(seq1,seq2)
-        figure = plot_bindings(threshold, bind_values_1, bind_values_2)
-
-        canvas = FigureCanvas(figure)
-        canvas.draw()
-
-        layout = QVBoxLayout()
-        label = QLabel("Threshold")
-        layout.addWidget(label)
-        layout.addWidget(slider)
-        dialog.setLayout(layout)
-        dialog.exec_()
-
-    #def threshold(self,value): # for graphs
-
     def evalparam(self):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Evaluation Parameters")
@@ -82,6 +55,8 @@ class RMW(QtWidgets.QWidget):
         label1 = QtWidgets.QLabel("Choose Model")
         combo = QComboBox(self)
         combo.addItems(get_saved_models())
+
+        self.currentmodel = str(combo.currentText())
 
         label2 = QtWidgets.QLabel("Input sequences")
 
@@ -93,15 +68,17 @@ class RMW(QtWidgets.QWidget):
         label5 = QtWidgets.QLabel("(DNA sequence inputs can only be a max length of 300 b.p)")
 
         label6 = QtWidgets.QLabel("DNA Sequence 1")
-        textbox1 = QLineEdit(self)
+        self.textbox1 = QLineEdit(self)
+        self.dna1 = self.textbox1.text()
 
         label7 = QtWidgets.QLabel("DNA Sequence 2")
-        textbox2 = QLineEdit(self)
+        self.textbox2 = QLineEdit(self)
+        self.dna2 = self.textbox2.text()
 
         cancel = QtWidgets.QPushButton("Cancel")
         cancel.clicked.connect(dialog.close)
         ok = QtWidgets.QPushButton("OK")
-        ok.clicked.connect(lambda: self.run_model()) # error check for valid inputs -- textbox has nothing then display error
+        ok.clicked.connect(lambda: self.run_model())
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addWidget(cancel)
@@ -118,9 +95,9 @@ class RMW(QtWidgets.QWidget):
         layout.addLayout(buttonlayout)
         layout.addWidget(label5)
         layout.addWidget(label6)
-        layout.addWidget(textbox1)
+        layout.addWidget(self.textbox1)
         layout.addWidget(label7)
-        layout.addWidget(textbox2)
+        layout.addWidget(self.textbox2)
         layout.addLayout(button_layout)
         dialog.setLayout(layout)
 
@@ -134,18 +111,7 @@ class RMW(QtWidgets.QWidget):
             label = QtWidgets.QLabel("Supported file types: .csv, .txt, and .npy \
                                                                           \nGo to [url for github docs] for example file formats.");
 
-            filepath_dialog = FileDialog()
-            filepath_dialog.directory = os.path.join(filepath_dialog.directory, 'data')
-            filepath_dialog.filter = "Text, CSV files (*.txt; *.csv);; Text files (*.txt);; CSV files (*.csv)"
-            npy_filepaths_dialog = MultiFileDialog()
-            npy_filepaths_dialog.directory = os.path.join(npy_filepaths_dialog.directory, 'data')
-            npy_filepaths_dialog.filter = "Numpy files (*.npy)"
-            npy_filepaths_dialog.setVisible(False)
-
-            csv_txt_btn.toggled.connect(lambda: filepath_dialog.setVisible(True))
-            csv_txt_btn.toggled.connect(lambda: npy_filepaths_dialog.setVisible(False))
-            npy_btn.toggled.connect(lambda: filepath_dialog.setVisible(False))
-            npy_btn.toggled.connect(lambda: npy_filepaths_dialog.setVisible(True))
+            filepath = DataLoaderWidget()
 
             cancel = QtWidgets.QPushButton("Cancel")
             cancel.clicked.connect(dialog.close)
@@ -157,8 +123,34 @@ class RMW(QtWidgets.QWidget):
             button_layout.addWidget(ok)
             layout = QtWidgets.QVBoxLayout()
             layout.addWidget(label)
-            layout.addWidget(filepath_dialog)
-            layout.addWidget(npy_filepaths_dialog)
+            layout.addWidget(filepath)
             layout.addLayout(button_layout)
             dialog.setLayout(layout)
             dialog.exec_()
+
+    def run_model(self):  # graph
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("Output graph")
+
+        slider = QSlider(Qt.Vertical)
+        slider.setMinimum(0)
+        slider.setMaximum(1)
+        slider.setTickPosition(QSlider.TicksBelow)
+        slider.setSingleStep(0.1)
+        slider.setTickInterval(0.1)
+        #slider.valueChanged[int].connect(self.threshold)
+        threshold = slider.value()
+
+        cross_talk_eval = CrossTalkEvaluator(self.currentmodel)
+        bind_values_1, bind_values_2 = cross_talk_eval.run(self.dna1, self.dna2)
+        figure = cross_talk_eval.plot_bindings(threshold, bind_values_1, bind_values_2)
+
+        canvas = FigureCanvas(figure)
+        canvas.draw()
+
+        layout = QVBoxLayout()
+        label = QLabel("Threshold")
+        layout.addWidget(label)
+        layout.addWidget(slider)
+        dialog.setLayout(layout)
+        dialog.exec_()
