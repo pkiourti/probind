@@ -1,13 +1,14 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import os
-from PyQt5.QtWidgets import (QLabel, QSlider, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget, QLineEdit, QMessageBox)
+from PyQt5.QtWidgets import (QLabel, QSlider, QPlainTextEdit, QRadioButton, QPushButton, QComboBox, QVBoxLayout, QApplication, QWidget)
 from PyQt5.QtCore import Qt
 from file_dialog import FileDialog, MultiFileDialog
 from utils import get_saved_models
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from backend.cross_talk_evaluator import CrossTalkEvaluator
 from data_loader import DataLoaderWidget
+
 
 project_root = os.environ.get('PYTHONPATH')
 try:
@@ -68,12 +69,10 @@ class RMW(QtWidgets.QWidget):
         label5 = QtWidgets.QLabel("(DNA sequence inputs can only be a max length of 300 b.p)")
 
         label6 = QtWidgets.QLabel("DNA Sequence 1")
-        self.textbox1 = QLineEdit(self)
-        self.dna1 = self.textbox1.text()
+        self.dna1 = QPlainTextEdit(self)
 
         label7 = QtWidgets.QLabel("DNA Sequence 2")
-        self.textbox2 = QLineEdit(self)
-        self.dna2 = self.textbox2.text()
+        self.dna2 = QPlainTextEdit(self)
 
         cancel = QtWidgets.QPushButton("Cancel")
         cancel.clicked.connect(dialog.close)
@@ -95,9 +94,9 @@ class RMW(QtWidgets.QWidget):
         layout.addLayout(buttonlayout)
         layout.addWidget(label5)
         layout.addWidget(label6)
-        layout.addWidget(self.textbox1)
+        layout.addWidget(self.dna1)
         layout.addWidget(label7)
-        layout.addWidget(self.textbox2)
+        layout.addWidget(self.dna2)
         layout.addLayout(button_layout)
         dialog.setLayout(layout)
 
@@ -132,9 +131,8 @@ class RMW(QtWidgets.QWidget):
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Output graph")
 
-        slider = QSlider(Qt.Vertical)
-        slider.setMinimum(0)
-        slider.setMaximum(1)
+        slider = QSlider(Qt.Horizontal)
+        slider.setRange(0, 1)
         slider.setTickPosition(QSlider.TicksBelow)
         slider.setSingleStep(0.1)
         slider.setTickInterval(0.1)
@@ -142,7 +140,7 @@ class RMW(QtWidgets.QWidget):
         threshold = slider.value()
 
         cross_talk_eval = CrossTalkEvaluator(self.currentmodel)
-        bind_values_1, bind_values_2 = cross_talk_eval.run(self.dna1, self.dna2)
+        bind_values_1, bind_values_2 = cross_talk_eval.run(self.dna1.toPlainText().rstrip(), self.dna2.toPlainText().rstrip())
         figure = cross_talk_eval.plot_bindings(threshold, bind_values_1, bind_values_2)
 
         canvas = FigureCanvas(figure)
@@ -152,5 +150,6 @@ class RMW(QtWidgets.QWidget):
         label = QLabel("Threshold")
         layout.addWidget(label)
         layout.addWidget(slider)
+        layout.addWidget(canvas)
         dialog.setLayout(layout)
         dialog.exec_()
