@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib import colors as mcolors
+from matplotlib.ticker import FuncFormatter
 
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 plt.style.use('seaborn-dark')
@@ -179,6 +180,12 @@ class TrainWrapper(object):
 
         return figure
 
+    def integers(self, x, pos):
+        return '%1d' % x
+
+    def one_decimal(self, y, pos):
+        return '%1.1f' % y
+
     def get_figure(self):
         figure = plt.figure()
         ax = figure.add_subplot()
@@ -186,7 +193,9 @@ class TrainWrapper(object):
         ax.plot([i for i in range(self.epochs)], self.test_losses, label='test')
         ax.legend()
         ax.grid()
-        plt.title(f"Learning {self.model_name} behavior")#Loss throughout training epochs")
+        ax.xaxis.set_major_formatter(FuncFormatter(self.integers))
+        ax.yaxis.set_major_formatter(FuncFormatter(self.one_decimal))
+        plt.title(f"Learning {self.model_name}'s binding behavior")#Loss throughout training epochs")
         plt.xlabel("Training epoch")
         plt.ylabel("Loss")
 

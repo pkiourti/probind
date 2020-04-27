@@ -113,7 +113,7 @@ class CrossTalkEvaluator(object):
     def plot_seq_bindings(self, ax, xlim, bindings, legend, xlabel, ylabel, threshold):
         size = [i * self.model.input_length for i in range(len(bindings))]
         ax.plot(size, bindings, label=legend)
-        line, _ = ax.plot(size, [threshold for _ in range(len(bindings))], label='threshold', color=colors['darkred'])
+        line, = ax.plot(size, [threshold for _ in range(len(bindings))], label='threshold', color=colors['darkred'])
         ax.legend(fontsize=15)
         ax.grid()
         ax.set_ylim(0, 1.01)
@@ -137,10 +137,10 @@ class CrossTalkEvaluator(object):
         size = 1.01 * size
 
         self.figure = plt.figure(figsize=(20, 10))
-        ax1 = figure.add_subplot(2, 1, 1)
+        ax1 = self.figure.add_subplot(2, 1, 1)
         self.line1 = self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values", threshold)
 
-        ax2 = figure.add_subplot(2, 1, 2)
+        ax2 = self.figure.add_subplot(2, 1, 2)
         self.line2 = self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
 
         self.figure.suptitle("Cross Talk for Transcription Factor: " + str(self.model_name), fontsize=25)
