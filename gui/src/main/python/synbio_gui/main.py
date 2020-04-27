@@ -10,7 +10,7 @@ import sys
 if __name__ == '__main__':
     appctxt = ApplicationContext()       # 1. Instantiate ApplicationContext
     window = QtWidgets.QMainWindow()
-    window.setWindowTitle("EC552 TF Orthogonality Tool")
+    window.setWindowTitle("ProBind")
     window.setFixedSize(425, 250)
     temp_widget = QtWidgets.QWidget()
 
