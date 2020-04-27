@@ -161,7 +161,7 @@ def convert_txt_to_npy(txt_filepath, test=False):
 
         reverse = np.asarray(rev_seqs)
 
-        return forward, reverse, None
+        return forward[0], reverse[0], None
 
 
 def convert_csv_to_npy(csv_filepath, test=False):
@@ -233,7 +233,7 @@ def convert_csv_to_npy(csv_filepath, test=False):
 
         reverse = np.asarray(rev_seqs)
 
-        return forward, reverse, None
+        return forward[0], reverse[0], None
 
 def gen_save_rev_seq(fwd_seq_filepath, test=False):
     fwd_seq_file_name = os.path.splitext(os.path.basename(fwd_seq_filepath))[0]
@@ -258,7 +258,7 @@ def gen_save_rev_seq(fwd_seq_filepath, test=False):
         return rev_file_name
 
     else:
-        return reverse
+        return reverse[0]
 
 
 def choose_random_input_data():

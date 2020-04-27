@@ -173,7 +173,7 @@ class RMW(QtWidgets.QWidget):
         self.line2 = self.plot_seq_bindings(ax2, size, self.bind2, 'DNA seq 2', "DNA base position", "Binding values",
                                             self.threshold)
 
-        self.figure.suptitle("Cross Talk for Transcription Factor: " + str(self.currentmodel), fontsize=25)
+        self.figure.suptitle("Cross Talk for: " + str(self.currentmodel), fontsize=25)
         self.canvas = FigureCanvas(self.figure)
         self.initial = 0
         self.dialog = QtWidgets.QDialog(self)
