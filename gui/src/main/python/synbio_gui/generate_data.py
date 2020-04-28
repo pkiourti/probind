@@ -27,7 +27,7 @@ class GenerateDataWidget(QtWidgets.QWidget):
         alert = QtWidgets.QMessageBox()
         alert.setWindowTitle("Generate random data")
         try:
-            generator = Generator(300, 10000)
+            generator = Generator(300, 2500)
             forward, reverse, binding_values = generator.create_random_dataset()
             forward_file, reverse_file, bind_v_file = data_files(os.path.join(project_root, 'data'))
             np.save(forward_file + '.npy', forward)
