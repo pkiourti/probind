@@ -123,7 +123,7 @@ class DataLoaderWidget(QtWidgets.QDialog):
                 self.y = file_names[1] + ".npy"
 
             else: # testing, do not save .npy files to data folder, just load the .npy arrays
-                self.x_fwd = np.load(inputs[1][0])
-                self.x_rev = utils.gen_save_rev_seq(inputs[1][0], test=True)
-                self.y = np.load(inputs[1][1])
+                self.x_fwd = np.load(inputs[1][0])[0]
+                # self.x_rev = utils.gen_save_rev_seq(inputs[1][0], test=True)
+                self.y = np.load(inputs[1][1])[0]
 
