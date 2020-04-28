@@ -19,7 +19,7 @@ conda create -n probind python=3.6
 conda activate probind
 python3 -m pip install pytorch 
 python3 -m pip install torchvision
-python3 -m matplotlib numpy seaborn
+python3 -m pip matplotlib numpy seaborn
 python3 -m pip install
 python3 -m pip install fbs PyQt5==5.9.2
 git clone git@github.com:pkiourti/probind.git
@@ -39,7 +39,7 @@ git clone git@github.com:pkiourti/probind.git
 ```
 
 ## Run
-
+Make sure that the PYTHONPATH is set to where probind/Code is as explained above.
 ```
 cd probind/Code/gui
 fbs run
