@@ -1,4 +1,5 @@
 # ProBind Tool
+ProBind has the ability to model the behavior of the binding of proteins. It can produce several models, one per protein. Each model is a Convolutional Neural Network that represents the binding behavior of one protein. The model accepts one or more DNA sequences of 300 b.p. each and their reverse complements as input. The output of the model is one binding value per DNA sequence. This output scalar value is between 0 and 1 and represents how well the protein that is modeled binds to the given DNA sequences.
 
 ## Requirements
 Install anaconda: [on windows](https://docs.anaconda.com/anaconda/install/windows/), [on mac](https://docs.anaconda.com/anaconda/install/mac-os/), [on linux](https://docs.anaconda.com/anaconda/install/linux/)
