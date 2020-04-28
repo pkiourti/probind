@@ -150,7 +150,7 @@ class TrainModelWidget(QtWidgets.QWidget):
                 self.train_model_dialog()
             else:
                 # self.load_data()
-                load_data_dialog = DataLoaderWidget()
+                load_data_dialog = DataLoaderWidget(test=False, label="Train model with this data")
                 self.x_fwd = load_data_dialog.x_fwd
                 self.x_rev = load_data_dialog.x_rev
                 self.y = load_data_dialog.y
