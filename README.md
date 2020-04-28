@@ -11,8 +11,6 @@ python3 -m pip install fbs PyQt5==5.9.2 --user
 git clone git@github.com:pkiourti/probind.git
 cd probind/Code/
 export PYTHONPATH=$(pwd)
-cd gui
-fbs run
 ```
 
 #### MacOS
@@ -27,8 +25,6 @@ python3 -m pip install fbs PyQt5==5.9.2
 git clone git@github.com:pkiourti/probind.git
 cd probind/Code/
 export PYTHONPATH=$(pwd)
-cd gui
-fbs run
 ```
 #### Windows
 ```
@@ -40,6 +36,11 @@ conda install -c conda-forge matplotlib numpy seaborn PyQt==5.9.2
 python3 -m pip install fbs
 Set the environmental variable PYTHONPATH to where probind/Code is.
 git clone git@github.com:pkiourti/probind.git
+```
+
+## Run
+
+```
 cd probind/Code/gui
 fbs run
 ```
