@@ -133,21 +133,6 @@ class TrainWrapper(object):
         self.iterator = iter(self.train_loader)
         self.set_batch_idx(0)
 
-    # this should be called from the UI in the exact same way
-    def run(self):
-        start_time = time.time()
-        batches = self.get_num_batches()
-        for epoch in range(self.epochs):
-            while self.get_batch_idx() < batches:
-                self.one_step_train(epoch)
-            self.test()
-            self.reset()
-
-        total_time = time.time() - start_time
-        print(f'Total training time: {total_time / 60} mins')
-        self.save_model()
-        return self.get_figure()
-
     def train(self):
         start_time = time.time()
 
@@ -195,7 +180,7 @@ class TrainWrapper(object):
         ax.grid()
         ax.xaxis.set_major_formatter(FuncFormatter(self.integers))
         ax.yaxis.set_major_formatter(FuncFormatter(self.one_decimal))
-        plt.title(f"Learning {self.model_name}'s binding behavior")#Loss throughout training epochs")
+        plt.title(f"Learning {self.model_name}'s binding behavior")  # Loss throughout training epochs")
         plt.xlabel("Training epoch")
         plt.ylabel("Loss")
 
