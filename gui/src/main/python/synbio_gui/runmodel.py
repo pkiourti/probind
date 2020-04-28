@@ -61,6 +61,8 @@ class RMW(QtWidgets.QWidget):
         self.slider.setMaximum(100)
         self.slider.setTickInterval(1)
         self.slider.valueChanged.connect(self.threshold_change)
+        self.combo = QComboBox()
+        self.combo.currentIndexChanged.connect(self.model_change)
 
     def nomodel(self):
         dialog = QtWidgets.QDialog(self)
@@ -78,10 +80,11 @@ class RMW(QtWidgets.QWidget):
         dialog.setWindowTitle("Evaluation Parameters")
 
         label1 = QtWidgets.QLabel("Choose Model")
-        combo = QComboBox(self)
-        combo.addItems(get_saved_models())
+        self.combo = QComboBox(self)
+        self.combo.addItems(get_saved_models())
+        self.combo.currentIndexChanged.connect(self.model_change)
 
-        self.currentmodel = str(combo.currentText())
+        self.currentmodel = str(self.combo.currentText())
         self.cross_talk_evaluator.load_model(self.currentmodel)
 
         label2 = QtWidgets.QLabel("Input sequences")
@@ -90,8 +93,6 @@ class RMW(QtWidgets.QWidget):
         label3.setChecked(True)
         label4 = QRadioButton("Upload data file")
         label4.toggled.connect(self.uploaddata)
-
-        label5 = QtWidgets.QLabel("(DNA sequence inputs can only be a max length of 300 b.p)")
 
         label6 = QtWidgets.QLabel("DNA Sequence 1")
         self.dna1 = QPlainTextEdit(self)
@@ -117,10 +118,9 @@ class RMW(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(label1)
-        layout.addWidget(combo)
+        layout.addWidget(self.combo)
         layout.addWidget(label2)
         layout.addLayout(buttonlayout)
-        layout.addWidget(label5)
         layout.addWidget(label6)
         layout.addWidget(self.dna1)
         layout.addWidget(label7)
@@ -129,6 +129,10 @@ class RMW(QtWidgets.QWidget):
         dialog.setLayout(layout)
 
         dialog.exec_()
+
+    def model_change(self):
+        self.currentmodel = str(self.combo.currentText())
+        self.cross_talk_evaluator.load_model(self.currentmodel)
 
     def dna_change(self):
         self.bind1, self.bind2 = self.cross_talk_evaluator.run(self.dna1.toPlainText().rstrip(),
