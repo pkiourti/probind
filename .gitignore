@@ -6,6 +6,6 @@ gui/src/main/python/synbio_gui/__pycache__/*
 backend/__pycache__/*
 *.npy
 *.ipynb
-model
 src/*
 *.pdf
+models/*
