@@ -59,7 +59,7 @@ fbs run
 	A C T G A T C G T A … 
 	C T A G T A G C A C … 
 
-##### Test our tool by choosing the data inside the test_data:  probind/Final_Project_ProBind/Code/test_data. Choose:
+##### Test our tool by choosing the data inside the test_data folder: probind/Final_Project_ProBind/Code/test_data. Choose:
 - dna.csv **or**
 - dna.txt **or**
 - **both** dna1.npy, dna2.npy **or**
