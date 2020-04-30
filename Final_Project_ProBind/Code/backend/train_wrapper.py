@@ -24,11 +24,11 @@ except Exception as e:
 
 
 class TrainWrapper(object):
-    """ A wrapper that defines a new Neural Network,
-        loads numpy data,
-        trains the model,
-        keeps track of the name, the model, train&test losses,
-        plots the losses and saves the model"""
+    """
+    A wrapper that defines a new Neural Network, loads numpy data, trains the model,
+    keeps track of the name, the model, train&test losses,
+    plots the losses and saves the model
+    """
 
     def __init__(self, epochs, x_forward, x_reverse, y, model_name):
 
