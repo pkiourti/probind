@@ -21,6 +21,7 @@ base_idx_mapping = {'A': 0, 'T': 1, 'C': 2, 'G': 3}
 
 
 class CrossTalkEvaluator(object):
+    """ Class that loads a CNN model and DNA sequences to predict the binding values"""
 
     def __init__(self):
         self.dev = "cpu"
@@ -31,6 +32,10 @@ class CrossTalkEvaluator(object):
         self.line2 = ""
 
     def compute_reverse_complements(self, seq_1, seq_2):
+        """
+        Computes the reverse complement from the two DNA sequences provided as numpy arrays
+        - one-hot vector representation
+        """
         identity_matrix = np.eye(4, dtype=int)
 
         reverse_1 = np.flip(
@@ -63,6 +68,7 @@ class CrossTalkEvaluator(object):
             return 2
 
     def seq_to_array(self, seq):
+        """ Converts a DNA string to a numpy array of one-hot vectors"""
         list = []
         identity = np.eye(4)
         for base in seq:
@@ -77,6 +83,7 @@ class CrossTalkEvaluator(object):
         return seq_1, seq_2
 
     def predict_binding(self, seq_length, x_forward, x_reverse):
+        """ Predicts the binding value of a forward and reverse sequence """
         input_length = self.model.input_length
         no_of_bind_values = int(seq_length / input_length)
 
@@ -89,6 +96,7 @@ class CrossTalkEvaluator(object):
         return bind_values
 
     def run(self, seq_1: Union[str, np.ndarray], seq_2: Union[str, np.ndarray]):
+        """ Computes the binding values for seq1, and seq2 that can be either strings or numpy arrays """
 
         seq_1, seq_2 = self.convert_seqs_to_array(seq_1, seq_2)
 
@@ -129,6 +137,7 @@ class CrossTalkEvaluator(object):
         return line
 
     def plot_bindings(self, threshold, binding_1, binding_2):
+        """ Plots 2 figures for the binding values per DNA Sequence """
         size1 = len(binding_1) * 300
         size2 = len(binding_2) * 300
 
@@ -138,11 +147,12 @@ class CrossTalkEvaluator(object):
 
         self.figure = plt.figure(figsize=(20, 10))
         ax1 = self.figure.add_subplot(2, 1, 1)
-        self.line1 = self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values", threshold)
+        self.line1 = self.plot_seq_bindings(ax1, size, binding_1, 'DNA seq 1', "DNA base position", "Binding values",
+                                            threshold)
 
         ax2 = self.figure.add_subplot(2, 1, 2)
-        self.line2 = self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values", threshold)
+        self.line2 = self.plot_seq_bindings(ax2, size, binding_2, 'DNA seq 2', "DNA base position", "Binding values",
+                                            threshold)
 
         self.figure.suptitle("Cross Talk for: " + str(self.model_name), fontsize=25)
         return self.figure
-

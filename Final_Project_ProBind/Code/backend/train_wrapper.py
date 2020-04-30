@@ -24,6 +24,11 @@ except Exception as e:
 
 
 class TrainWrapper(object):
+    """ A wrapper that defines a new Neural Network,
+        loads numpy data,
+        trains the model,
+        keeps track of the name, the model, train&test losses,
+        plots the losses and saves the model"""
 
     def __init__(self, epochs, x_forward, x_reverse, y, model_name):
 
@@ -52,6 +57,10 @@ class TrainWrapper(object):
         self.iterator = iter(self.train_loader)
 
     def define_model(self):
+        """
+        Define the CNN model
+        :return: the CNN torch module that corresponds to the model, and the Stochastic Gradient Descent optimizer object
+        """
         cnn = CNN()
 
         device = torch.device(self.dev)
@@ -62,6 +71,11 @@ class TrainWrapper(object):
         return cnn, optim
 
     def load_data(self, path, name_x_forward, name_x_reverse, name_y):
+        """
+        Loads the numpy arrays for forward & reverse seqs and the binding values
+        Splits the data to 80% training and 20% testing
+        :return: 2 DataLoader, one for the training and one for the test data
+        """
         dna_seqs_for = np.load(os.path.join(path, 'data', name_x_forward))
         dna_seqs_rev = np.load(os.path.join(path, 'data', name_x_reverse))
         dna_binding_values = np.load(os.path.join(path, 'data', name_y))
@@ -82,6 +96,7 @@ class TrainWrapper(object):
         return train_loader, test_loader
 
     def save_model(self):
+        """ Saves the model under the models folder"""
         models_path = os.path.join(self.path, 'models')
         if not os.path.exists(models_path):
             os.makedirs(models_path)
@@ -107,6 +122,10 @@ class TrainWrapper(object):
         return self.batch_idx
 
     def one_step_train(self, epoch):
+        """
+        Performs one step of the training using the batch. This function is used by the GUI
+        :return: a string for logging the current loss
+        """
         X_train_forward, X_train_reverse, y_train = self.iterator.next()
         pred = self.model(X_train_forward, X_train_reverse)
         loss = self.model.loss(pred, y_train)
@@ -134,6 +153,10 @@ class TrainWrapper(object):
         self.set_batch_idx(0)
 
     def train(self):
+        """
+        This function trains the model and can be used if you want to run it from the command line
+        :return: plt.figure of the train and test losses
+        """
         start_time = time.time()
 
         for epoch in range(self.epochs):
@@ -172,6 +195,10 @@ class TrainWrapper(object):
         return '%1.1f' % y
 
     def get_figure(self):
+        """
+            Creates a figure of the train and test losses
+        :return: plt.figure
+        """
         figure = plt.figure()
         ax = figure.add_subplot()
         ax.plot([i for i in range(self.epochs)], self.train_losses, label='train')
