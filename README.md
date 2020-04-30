@@ -45,3 +45,22 @@ Make sure that the PYTHONPATH is set to where probind/Code is as explained above
 cd probind/Final_Project_ProBind/Code/gui
 fbs run
 ```
+#### For using a model (through the `Run model` button) we accept the following DNA representations:
+- 2 DNA strings in the text boxes
+- Load 2 separate DNA sequences:
+	- saved as 2 separate .npy arrays:
+	 shape of numpy array: (1, 4, num_base_pairs) 
+	 with num_base_pairs > 300
+	 (This corresponds to the one-hot vector representation)
+	- saved as 1 .csv file: 
+	A,C,T,G,A,T,C,G,T,A, …  
+	C,T,A,G,T,A,G,C,A,T, … 
+	- saved as 1 .txt file:
+	A C T G A T C G T A … 
+	C T A G T A G C A C … 
+
+##### Test our tool by choosing the data inside the test_data:  probind/Final_Project_ProBind/Code/test_data. Choose:
+- dna.csv **or**
+- dna.txt **or**
+- **both** dna1.npy, dna2.npy **or**
+- copy and paste in the text boxes the 2 strings inside the separate files dna1, dna2
